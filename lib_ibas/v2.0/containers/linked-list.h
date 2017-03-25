@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "lib_ibas/v2.0/lib_ibas.h"
-#include "generic-list.h"
+#include "../lib_ibas.h"
 
 declareFields(LinkedList, {
   size_t elemSize;
@@ -14,5 +13,20 @@ declareFields(LinkedList, {
 })
 
 declareClass(LinkedList, {
-  genericListMethodsDecl(LinkedList_t, list, Object)
+  LinkedList_t (*create)(size_t elemSize);
+  void (*destroy)(LinkedList_t list);
+
+  Object (*get)(LinkedList_t list, int i);
+  void (*set)(LinkedList_t list, int i, Object val);
+
+  void (*add)(LinkedList_t list, Object val);
+  void (*insert)(LinkedList_t list, int i, Object val);
+  void (*remove)(LinkedList_t list, int i);
+
+  void (*forEach)(LinkedList_t list, bool (*func)(LinkedList_t list, Object element, Object ctx), Object ctx);
+  int (*find)(LinkedList_t list, Object obj);
+
+  void (*clear)(LinkedList_t list);
+
+  String_t (*toString)(LinkedList_t list);
 })

@@ -2,8 +2,9 @@
 // Created by Павел on 19.03.2017.
 //
 
-#include <lib_ibas/v2.0/lib_ibas.h>
+#include "lib_ibas/v2.0/lib_ibas.h"
 #include "lib_ibas/v2.0/containers/linked-list.h"
+#include "lib_ibas/v2.0/containers/typed/double-vector.h"
 
 int doTask();
 
@@ -35,6 +36,8 @@ int doTask() {
   LinkedList_t list = LinkedList.create(5);
   printf("got it");
   list = LinkedList.create(0);
+
+  DoubleVector_t dv = DoubleVector.create(5);
 
   return 0;
 }

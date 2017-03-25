@@ -3,7 +3,7 @@
 //
 
 #include "vector.h"
-#include "lib_ibas/v2.0/lib_ibas.h"
+#include "../lib_ibas.h"
 
 Vector_t __Vector_create(size_t size, size_t elemSize) {
   if (!elemSize) throw(IllegalArgumentException, "ElemSize must be greater than zero");
@@ -94,6 +94,16 @@ String_t __Vector_toString(Vector_t vec) {
 }
 
 Vector_t_ Vector = {
-    genericListMethodsList(Vector),
+    __Vector_create,
+    __Vector_destroy,
+    __Vector_get,
+    __Vector_set,
+    __Vector_add,
+    __Vector_insert,
+    __Vector_remove,
+    __Vector_forEach,
+    __Vector_find,
+    __Vector_clear,
+    __Vector_toString,
     __Vector_ensureCapacity
 };

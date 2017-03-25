@@ -110,5 +110,15 @@ String_t __LinkedList_toString(LinkedList_t list) {
 }
 
 LinkedList_t_ LinkedList = {
-    genericListMethodsList(LinkedList)
+    __LinkedList_create,
+    __LinkedList_destroy,
+    __LinkedList_get,
+    __LinkedList_set,
+    __LinkedList_add,
+    __LinkedList_insert,
+    __LinkedList_remove,
+    __LinkedList_forEach,
+    __LinkedList_find,
+    __LinkedList_clear,
+    __LinkedList_toString
 };
