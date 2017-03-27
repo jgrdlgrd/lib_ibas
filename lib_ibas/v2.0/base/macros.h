@@ -4,7 +4,7 @@
 
 #pragma once
 
-#define declareFields(name, fields) \
+#define declareType(name, fields) \
     typedef struct fields name##_s; \
     typedef name##_s* name##_t;
 

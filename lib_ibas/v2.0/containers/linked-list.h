@@ -6,7 +6,7 @@
 
 #include "../lib_ibas.h"
 
-declareFields(LinkedList, {
+declareType(LinkedList, {
   size_t elemSize;
   int size;
   void *head;

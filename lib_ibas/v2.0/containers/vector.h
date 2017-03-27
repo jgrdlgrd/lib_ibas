@@ -8,7 +8,7 @@
 
 #define VECTOR_GROWTH_FACTOR 1.5
 
-declareFields(Vector, {
+declareType(Vector, {
   size_t size;
   size_t elemSize;
   size_t capacity;
