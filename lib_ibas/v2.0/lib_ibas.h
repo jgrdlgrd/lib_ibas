@@ -4,7 +4,7 @@
 
 #pragma once
 
-//TODO organize source files and dependencies
+//TODO put const modifier where necessary
 //TODO document everything :D
 //TODO test everything :D
 
