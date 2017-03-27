@@ -67,7 +67,7 @@ void __Vector_insertSlice(Vector_t vec1, int i, void *slice, size_t size) {
 }
 
 void __Vector_insertAll(Vector_t vec1, int i, Vector_t vec2) {
-  if (vec1->size != vec2->size) throw(IllegalArgumentException, "Vector element sizes don't match!");
+  if (vec1->elemSize != vec2->elemSize) throw(IllegalArgumentException, "Vector element sizes don't match!");
 
   __Vector_insertSlice(vec1, i, vec2->storage, vec2->size);
 }
@@ -116,16 +116,16 @@ String_t __Vector_toString(Vector_t vec) {
 Vector_t_ Vector = {
     __Vector_create,
     __Vector_destroy,
+    __Vector_toString,
     __Vector_get,
     __Vector_set,
     __Vector_add,
     __Vector_insert,
-    __Vector_remove,
     __Vector_addAll,
     __Vector_insertAll,
+    __Vector_remove,
+    __Vector_clear,
     __Vector_forEach,
     __Vector_find,
-    __Vector_clear,
-    __Vector_toString,
     __Vector_ensureCapacity
 };
