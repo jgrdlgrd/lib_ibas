@@ -10,6 +10,7 @@ Any feedback is welcomed.
 
 ## What does IBAS stand for?
 Don't ask me. It's kind of Russian state secret.
+>As a sidenote: "zaibas" means "lightning" in Lithuanian.
 
 ## Tech details
 * Tested with GCC 5.4.0 on Cygwin
