@@ -3,6 +3,8 @@
 //
 
 #include "vector.h"
+
+//we couldn't include it in the header because of a circular dependency
 #include "../lib_ibas.h"
 
 Vector_t __Vector_create(size_t size, size_t elemSize) {
@@ -47,16 +49,35 @@ void __Vector_ensureCapacity(Vector_t vec, size_t capacity) {
   vec->capacity = capacity;
 }
 
+void __Vector_insertSlice(Vector_t vec1, int i, void *slice, size_t size) {
+  if (i < 0 || i > vec1->size) throw(IllegalArgumentException, "Vector index out of bounds");
+
+  size += vec1->size;
+  size_t cap = vec1->capacity;
+
+  while (size < cap) {
+    cap = max((size_t)(cap * VECTOR_GROWTH_FACTOR), cap + 1);
+  }
+  __Vector_ensureCapacity(vec1, cap);
+
+  Object ptr = vec1->storage + i * vec1->elemSize;
+  memmove(ptr + size * vec1->elemSize, ptr, vec1->elemSize * (vec1->size - i));
+  memcpy(ptr, slice, size * vec1->elemSize);
+  vec1->size += size;
+}
+
+void __Vector_insertAll(Vector_t vec1, int i, Vector_t vec2) {
+  if (vec1->size != vec2->size) throw(IllegalArgumentException, "Vector element sizes don't match!");
+
+  __Vector_insertSlice(vec1, i, vec2->storage, vec2->size);
+}
+
+void __Vector_addAll(Vector_t vec1, Vector_t vec2) {
+  __Vector_insertAll(vec1, (int) vec1->size, vec2);
+}
+
 void __Vector_insert(Vector_t vec, int i, Object val) {
-  if (i < 0 || i > vec->size) throw(IllegalArgumentException, "Vector index out of bounds");
-
-  if (vec->size == vec->capacity)
-    __Vector_ensureCapacity(vec, max((int)(vec->capacity * VECTOR_GROWTH_FACTOR), vec->capacity + 1));
-
-  Object ptr = vec->storage + i * vec->elemSize;
-  memmove(ptr + vec->elemSize, ptr, vec->elemSize * (vec->size - i));
-  memcpy(vec->storage + i * vec->elemSize, val, vec->elemSize);
-  vec->size++;
+  __Vector_insertSlice(vec, i, val, 1);
 }
 
 void __Vector_add(Vector_t vec, Object val) {
@@ -88,7 +109,6 @@ void __Vector_clear(Vector_t vec) {
   vec->size = 0;
 }
 
-//TODO implement
 String_t __Vector_toString(Vector_t vec) {
 
 }
@@ -101,6 +121,8 @@ Vector_t_ Vector = {
     __Vector_add,
     __Vector_insert,
     __Vector_remove,
+    __Vector_addAll,
+    __Vector_insertAll,
     __Vector_forEach,
     __Vector_find,
     __Vector_clear,

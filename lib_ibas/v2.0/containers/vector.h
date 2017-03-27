@@ -2,6 +2,9 @@
 // Created by Павел on 16.03.2017.
 //
 
+//TODO add slice, clone, removeRange, indexOf, implement toString
+//TODO think about iterators
+
 #pragma once
 
 #include "../base/base.h"
@@ -25,6 +28,9 @@ declareClass(Vector, {
   void (*add)(Vector_t vec, Object val);
   void (*insert)(Vector_t vec, int i, Object val);
   void (*remove)(Vector_t vec, int i);
+
+  void (*addAll)(Vector_t vec1, Vector_t vec2);
+  void (*insertAll)(Vector_t vec, int i, Vector_t vec2);
 
   void (*forEach)(Vector_t vec, bool (*func)(Vector_t vec, Object element, Object ctx), Object ctx);
   int (*find)(Vector_t vec, Object obj);
