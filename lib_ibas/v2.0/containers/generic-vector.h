@@ -29,11 +29,12 @@
   })
 
 
-/* CLion shows an error after substituting this macro, but actually there's no error
+/*
+ * CLion shows an error after substituting this macro, but actually there's no error
  * TODO suppress the error (seems not possible)
  * maybe I should report a bug
  */
-#define genericVectorImplementation(class, elemType) \
+#define genericVectorInternals(class, elemType) \
   Vector_t __##class##_create(size_t size) { \
     return Vector.create(size, sizeof(elemType)); \
   } \
@@ -82,8 +83,11 @@
    \
   String_t __##class##_toString(Vector_t vec) { \
     Vector.clear(vec); \
-  } \
-   \
+  }
+
+
+#define genericVectorImplementation(class, elemType) \
+  genericVectorInternals(class, type) \
   class##_t_ class = { \
     __##class##_create, \
     __##class##_destroy, \
