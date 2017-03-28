@@ -110,7 +110,7 @@ void __Vector_clear(Vector_t vec) {
 }
 
 String_t __Vector_toString(Vector_t vec) {
-
+  return String.format("[[Vector size=%zd elemSize=%zd storage=%p]]", vec->size, vec->elemSize, vec->storage);
 }
 
 Vector_t_ Vector = {

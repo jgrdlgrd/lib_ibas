@@ -16,6 +16,21 @@ String_t __String_fromCStr(CString cstr) {
   return str;
 }
 
+String_t __String_format(CString format, ...) {
+  va_list va;
+  va_start(va, format);
+
+  int size = vsnprintf(NULL, 0, format, va);
+  if (size < 0) throw(IllegalArgumentException, "String.format() failed");
+
+  String_t str = String.create((size_t) size);
+  size = vsnprintf(str->storage, (size_t) size, format, va);
+  if (size < 0) throw(IllegalArgumentException, "String.format() failed");
+
+  va_end(va);
+  return str;
+}
+
 /*
  * out-of-place concatenation
  * creates a new string
@@ -51,6 +66,7 @@ String_t_ String = {
     ___String_find,
     ___String_ensureCapacity,
     __String_fromCStr,
+    __String_format,
     __String_concat,
     __String_appendCStr,
     __String_prependCStr
