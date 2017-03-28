@@ -4,7 +4,7 @@
 
 #include "string.h"
 
-genericVectorInternals(_String, char)
+genericVectorInternals(_String, char, NULL)
 
 String_t __String_toString(String_t str) {
   return str;
@@ -14,6 +14,19 @@ String_t __String_fromCStr(CString cstr) {
   String_t str = String.create(0);
   __Vector_insertSlice(str, 0, cstr, strlen(cstr));
   return str;
+}
+
+String_t __String_fromInt(int val) {
+  return String.format("%d", val);
+}
+
+String_t __String_fromDouble(double val) {
+  return String.format("%lf", val);
+}
+
+//TODO implement
+String_t __String_fromObject(Object obj) {
+  throw(RuntimeException, "Not implemented!");
 }
 
 String_t __String_format(CString format, ...) {
@@ -66,6 +79,9 @@ String_t_ String = {
     ___String_find,
     ___String_ensureCapacity,
     __String_fromCStr,
+    __String_fromInt,
+    __String_fromDouble,
+    __String_fromObject,
     __String_format,
     __String_concat,
     __String_appendCStr,

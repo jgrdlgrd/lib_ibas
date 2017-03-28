@@ -38,7 +38,7 @@
  * TODO suppress the error (seems not possible)
  * maybe I should report a bug
  */
-#define genericVectorInternals(class, elemType) \
+#define genericVectorInternals(class, elemType, toString_) \
   Vector_t __##class##_create(size_t size) { \
     return Vector.create(size, sizeof(elemType)); \
   } \
@@ -98,12 +98,23 @@
   } \
    \
   String_t __##class##_toString(Vector_t vec) { \
-    Vector.clear(vec); \
+    if (toString_) { \
+      String_t (*toStr)(elemType elem) = toString_; \
+      String_t str = String.fromCStr("["); \
+      for (int i = 0; i < vec->size; i++) {\
+        String.addAll(str, toStr(__##class##_get(vec, i))); \
+        if (i < vec->size - 1) String.appendCStr(str, ", "); \
+      } \
+      String.add(str, ']'); \
+      /*TODO trim to size*/ \
+      return str; \
+    } \
+    return Vector.toString(vec); \
   }
 
 
-#define genericVectorImplementation(class, elemType) \
-  genericVectorInternals(class, elemType) \
+#define genericVectorImplementation(class, elemType, toString) \
+  genericVectorInternals(class, elemType, toString) \
   class##_t_ class = { \
     __##class##_create, \
     __##class##_destroy, \

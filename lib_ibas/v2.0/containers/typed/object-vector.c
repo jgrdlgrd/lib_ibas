@@ -4,4 +4,4 @@
 
 #include "object-vector.h"
 
-genericVectorImplementation(ObjectVector, Object)
+genericVectorImplementation(ObjectVector, Object, String.fromObject)

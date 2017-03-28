@@ -33,6 +33,10 @@ declareClass(String, {
   void (*ensureCapacity)(String_t str, size_t capacity);
 
   String_t (*fromCStr)(CString cstr);
+  String_t (*fromInt)(int val);
+  String_t (*fromDouble)(double val);
+  String_t (*fromObject)(Object obj);
+
   String_t (*format)(CString format, ...);
   String_t (*concat)(String_t str1, String_t str2);
 

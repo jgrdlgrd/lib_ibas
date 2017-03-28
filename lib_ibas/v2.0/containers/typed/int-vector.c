@@ -4,4 +4,4 @@
 
 #include "int-vector.h"
 
-genericVectorImplementation(IntVector, int)
+genericVectorImplementation(IntVector, int, String.fromInt)
