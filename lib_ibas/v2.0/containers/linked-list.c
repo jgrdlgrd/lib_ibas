@@ -17,25 +17,25 @@ LinkedList_t __LinkedList_create(size_t elemSize) {
 }
 
 void __LinkedList_forEach(LinkedList_t list, bool (*func)(LinkedList_t list, Object element, Object ctx), Object ctx) {
-  void *nextPtr = list->head;
-  while (nextPtr && !func(list, nextPtr, ctx)) {
-    nextPtr = *((void **) nextPtr);
+  void **nextPtr = list->head;
+  while (nextPtr && !func(list, nextPtr + 1, ctx)) {
+    nextPtr = *nextPtr;
   }
 }
 
-bool __LinkedList_freeNode(LinkedList_t list, Object element, Object ctx) {
-  free(element - sizeof(void *));
-  return false;
-}
-
 void __LinkedList_clear(LinkedList_t list) {
-  __LinkedList_forEach(list, __LinkedList_freeNode, NULL);
+  void *nextPtr = list->head, *tmp;
+  while (nextPtr) {
+    tmp = nextPtr;
+    nextPtr = *((void **) nextPtr);
+    free(tmp);
+  }
   list->size = 0;
 }
 
 void __LinkedList_destroy(LinkedList_t list) {
   if (list) {
-    __LinkedList_clear(list);
+    LinkedList.clear(list);
     free(list);
   }
 }
@@ -43,18 +43,18 @@ void __LinkedList_destroy(LinkedList_t list) {
 Object __LinkedList_get(LinkedList_t list, int i) {
   if (i < 0 || i >= list->size) throw(IllegalArgumentException, "List index out of bounds");
 
-  void *nextPtr = list->head;
+  void **nextPtr = list->head;
   while (i > 0) {
-    nextPtr = *((void **) nextPtr);
+    nextPtr = *nextPtr;
     i--;
   }
 
-  return nextPtr + sizeof(void *);
+  return nextPtr + 1;
 }
 
 void __LinkedList_set(LinkedList_t list, int i, Object val) {
-  Object node = __LinkedList_get(list, i) - sizeof(void *);
-  memcpy(node + sizeof(void *), val, list->elemSize);
+  Object node = LinkedList.get(list, i) - sizeof(void *);
+  memcpy(node, val, list->elemSize);
 }
 
 void __LinkedList_insert(LinkedList_t list, int i, Object val) {
@@ -62,63 +62,84 @@ void __LinkedList_insert(LinkedList_t list, int i, Object val) {
 
   Object *prev = &list->head;
   if (i > 0) {
-    prev = __LinkedList_get(list, i - 1);
+    prev = LinkedList.get(list, i - 1) - sizeof(void *);
   }
 
-  Object *newNode = Ibas.alloc(sizeof(void *) + list->elemSize, NULL);
+  void **newNode = Ibas.alloc(sizeof(void *) + list->elemSize, NULL);
 
-  Object tmp = *prev;
+  Object next = *prev;
   *prev = newNode;
-  *newNode = tmp;
-  memcpy(newNode + sizeof(void *), val, list->elemSize);
+  *newNode = next;
+  memcpy(newNode + 1, val, list->elemSize);
+  list->size++;
 }
 
 void __LinkedList_add(LinkedList_t list, Object val) {
-  __LinkedList_insert(list, list->size, val);
+  LinkedList.insert(list, (int) list->size, val);
+}
+
+void __LinkedList_insertAll(LinkedList_t list1, int i, LinkedList_t list2) {
+  if (list1->elemSize != list2->elemSize) throw(IllegalArgumentException, "LinkedList element sizes don't match!");
+
+  for (int j = 0; j < list2->size; j++) {
+    LinkedList.insert(list1, i++, LinkedList.get(list2, j));
+  }
+}
+
+void __LinkedList_addAll(LinkedList_t list1, LinkedList_t list2) {
+  LinkedList.insertAll(list1, (int) list1->size, list2);
 }
 
 void __LinkedList_remove(LinkedList_t list, int i) {
   if (i < 0 || i >= list->size) throw(IllegalArgumentException, "List index out of bounds");
+  void ****prev;
+  void *deleted;
 
-  Object *prev = &list->head;
-  if (i > 0) {
-    prev = __LinkedList_get(list, i - 1);
+  if (i == 0) {
+    prev = deleted = list->head;
+    list->head = *prev;
+  } else {
+    prev = LinkedList.get(list, i - 1) - sizeof(void *);
+    deleted = **prev;
+
+    if (i + 1 == list->size) *prev = NULL;
+    else *prev = ***prev;
   }
 
-  *prev = **(Object **) prev;
-  free(*prev);
+  free(deleted);
+  list->size--;
 }
 
 int __LinkedList_find(LinkedList_t list, Object obj) {
   int i = 0;
-  void *nextPtr = list->head;
+  void **nextPtr = list->head;
 
   while (i < list->size) {
-    if (!memcmp(nextPtr + sizeof(void *), obj, list->elemSize)) return i;
+    if (!memcmp(nextPtr + 1, obj, list->elemSize)) return i;
 
-    nextPtr = *((void **) nextPtr);
+    nextPtr = *nextPtr;
     i++;
   }
 
   return -1;
 }
 
-//TODO implement
 String_t __LinkedList_toString(LinkedList_t list) {
-  String_t str = String.create(20);
-  return str;
+  return String.format("[[LinkedList size=%zd elemSize=%zd head=%p]]", list->size, list->elemSize, list->head);
 }
 
 LinkedList_t_ LinkedList = {
     __LinkedList_create,
     __LinkedList_destroy,
+    __LinkedList_toString,
     __LinkedList_get,
     __LinkedList_set,
     __LinkedList_add,
     __LinkedList_insert,
+    __LinkedList_addAll,
+    __LinkedList_insertAll,
     __LinkedList_remove,
-    __LinkedList_forEach,
-    __LinkedList_find,
     __LinkedList_clear,
-    __LinkedList_toString
+    __LinkedList_forEach,
+    __LinkedList_find
 };
