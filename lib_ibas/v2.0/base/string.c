@@ -4,8 +4,6 @@
 
 #include "string.h"
 
-genericVectorInternals(_String, char, NULL)
-
 String_t __String_toString(String_t str) {
   return str;
 }
@@ -36,9 +34,10 @@ String_t __String_format(CString format, ...) {
   int size = vsnprintf(NULL, 0, format, va);
   if (size < 0) throw(IllegalArgumentException, "String.format() failed");
 
-  String_t str = String.create((size_t) size);
-  size = vsnprintf(str->storage, (size_t) size, format, va);
+  String_t str = String.create((size_t) size + 1);
+  size = vsnprintf(str->storage, (size_t) size + 1, format, va);
   if (size < 0) throw(IllegalArgumentException, "String.format() failed");
+  str->size = (size_t) size;
 
   va_end(va);
   return str;
@@ -63,21 +62,23 @@ void __String_prependCStr(String_t str, CString cstr) {
   __Vector_insertSlice(str, 0, cstr, strlen(cstr));
 }
 
+genericVectorInternals(_String, char, NULL)
+
 String_t_ String = {
     ___String_create,
-    ___String_destroy,
+    __Vector_destroy,
     __String_toString,
     ___String_get,
     ___String_set,
     ___String_add,
     ___String_insert,
-    ___String_addAll,
-    ___String_insertAll,
-    ___String_remove,
-    ___String_clear,
+    __Vector_addAll,
+    __Vector_insertAll,
+    __Vector_remove,
+    __Vector_clear,
     ___String_forEach,
     ___String_find,
-    ___String_ensureCapacity,
+    __Vector_ensureCapacity,
     __String_fromCStr,
     __String_fromInt,
     __String_fromDouble,

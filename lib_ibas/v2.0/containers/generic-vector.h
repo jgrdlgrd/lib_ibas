@@ -43,10 +43,6 @@
     return Vector.create(size, sizeof(elemType)); \
   } \
    \
-  void __##class##_destroy(Vector_t vec) { \
-    Vector.destroy(vec); \
-  } \
-   \
   elemType __##class##_get(Vector_t vec, int i) { \
     return *(elemType*)Vector.get(vec, i); \
   } \
@@ -63,18 +59,6 @@
     Vector.insert(vec, i, &val); \
   } \
    \
-  void __##class##_remove(Vector_t vec, int i) { \
-    Vector.remove(vec, i); \
-  } \
-   \
-  void __##class##_addAll(Vector_t vec1, Vector_t vec2) { \
-    Vector.addAll(vec1, vec2); \
-  } \
-   \
-  void __##class##_insertAll(Vector_t vec1, int i, Vector_t vec2) { \
-    Vector.insertAll(vec1, i, vec2); \
-  } \
-   \
   bool __##class##_forEachIntermediate(Vector_t vec, Object element, Object ctx) { \
     Pair *p = (Pair*) ctx; \
     return ((bool(*)(Vector_t, elemType, Object))(p->first))(vec, *(elemType*)element, p->second); \
@@ -87,14 +71,6 @@
    \
   int __##class##_find(Vector_t vec, elemType val) { \
     return Vector.find(vec, &val); \
-  } \
-   \
-  void __##class##_clear(Vector_t vec) { \
-    Vector.clear(vec); \
-  } \
-   \
-  void __##class##_ensureCapacity(Vector_t vec, size_t capacity) { \
-    Vector.ensureCapacity(vec, capacity); \
   } \
    \
   String_t __##class##_toString(Vector_t vec) { \
@@ -117,17 +93,17 @@
   genericVectorInternals(class, elemType, toString) \
   class##_t_ class = { \
     __##class##_create, \
-    __##class##_destroy, \
+    __Vector_destroy, \
     __##class##_toString, \
     __##class##_get, \
     __##class##_set, \
     __##class##_add, \
     __##class##_insert, \
-    __##class##_addAll, \
-    __##class##_insertAll, \
-    __##class##_remove, \
-    __##class##_clear, \
+    __Vector_addAll, \
+    __Vector_insertAll, \
+    __Vector_remove, \
+    __Vector_clear, \
     __##class##_forEach, \
     __##class##_find, \
-    __##class##_ensureCapacity \
+    __Vector_ensureCapacity \
   };
