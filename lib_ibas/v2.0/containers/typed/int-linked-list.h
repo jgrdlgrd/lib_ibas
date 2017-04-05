@@ -6,4 +6,4 @@
 
 #include "../generic-linked-list.h"
 
-genericLinkedListDeclaration(IntLinkedList, int)
+genericLinkedListDeclaration(IntLinkedList, int);

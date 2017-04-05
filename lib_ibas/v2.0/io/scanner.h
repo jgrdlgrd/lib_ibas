@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "lib_ibas/v2.0/lib_ibas.h"
+#include <errno.h>
+#include "../base/base.h"
 
 #define SCANNER_BUFFER_LENGTH 256;
 
@@ -21,4 +22,4 @@ declareClass(Scanner, {
   double (*nextDouble)();
   CString (*nextLine)();
   CString (*nextText)();
-})
+});

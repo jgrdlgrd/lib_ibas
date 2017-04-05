@@ -9,8 +9,8 @@
     typedef name##_s* name##_t;
 
 #define declareClass(name, members) \
-    typedef struct members name##_t_; \
-    extern name##_t_ name;
+    typedef struct members name##_c; \
+    extern name##_c name;
 
 //TODO consider other alternatives
 #define max(a,b) \

@@ -2,7 +2,8 @@
 // Created by Павел on 21.03.2017.
 //
 
-#include "lib_ibas.h"
+#include "base.h"
+#include "../io/scanner.h"
 
 void __Ibas_init() {
   e4c_context_begin(E4C_TRUE);
@@ -20,7 +21,7 @@ Object __Ibas_alloc(size_t size, CString message) {
   return ptr;
 }
 
-Ibas_t_ Ibas = {
+Ibas_c Ibas = {
     __Ibas_init,
     __Ibas_finish,
     __Ibas_alloc

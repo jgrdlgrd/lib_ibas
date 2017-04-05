@@ -4,41 +4,53 @@
 
 #pragma once
 
-#include "../lib_ibas.h"
 #include "linked-list.h"
 
 #define genericLinkedListDeclaration(class, elemType) \
   typedef LinkedList_t class##_t; \
    \
   declareClass(class, { \
-    class##_t (*create)(); \
-    void (*destroy)(class##_t list); \
-    String_t (*toString)(class##_t list); \
+    LinkedList_t (*create)(); \
+    void (*destroy)(LinkedList_t list); \
+    String_t (*toString)(LinkedList_t list); \
      \
-    elemType (*get)(class##_t list, int i); \
-    void (*set)(class##_t list, int i, elemType val); \
+    elemType (*get)(LinkedList_t list, int i); \
+    void (*set)(LinkedList_t list, int i, elemType val); \
      \
-    void (*add)(class##_t list, elemType val); \
-    void (*insert)(class##_t list, int i, elemType val); \
-    void (*addAll)(class##_t list1, class##_t list2); \
-    void (*insertAll)(class##_t list1, int i, class##_t list2); \
+    void (*add)(LinkedList_t list, elemType val); \
+    void (*insert)(LinkedList_t list, int i, elemType val); \
+    void (*addAll)(LinkedList_t list1, LinkedList_t list2); \
+    void (*insertAll)(LinkedList_t list1, int i, LinkedList_t list2); \
      \
-    void (*remove)(class##_t list, int i); \
-    void (*clear)(class##_t list); \
+    void (*remove)(LinkedList_t list, int i); \
+    void (*clear)(LinkedList_t list); \
      \
-    void (*forEach)(class##_t list, bool (*func)(class##_t list, elemType val, Object ctx), Object ctx); \
-    int (*find)(class##_t list, elemType val); \
-  })
+    int (*indexOf)(LinkedList_t list, elemType obj); \
+     \
+    Object (*iter)(LinkedList_t list, int i); \
+    Object (*begin)(LinkedList_t list); \
+    Object (*end)(LinkedList_t list); \
+    Object (*find)(LinkedList_t list, elemType obj); \
+     \
+    Object (*iterNext)(LinkedList_t list, Object iter); \
+    Object (*iterPrev)(LinkedList_t list, Object iter); \
+    Object (*iterJump)(LinkedList_t list, Object iter, int length); \
+     \
+    elemType (*iterGet)(LinkedList_t list, Object iter); \
+    void (*iterSet)(LinkedList_t list, Object iter, elemType val); \
+     \
+    void (*iterInsert)(LinkedList_t list, Object iter, elemType val); \
+    void (*iterInsertAll)(LinkedList_t list1, Object iter, LinkedList_t list2); \
+     \
+    void (*iterRemove)(LinkedList_t list, Object iter); \
+  });
 
 
-/*
- * CLion shows an error after substituting this macro, but actually there's no error
- * TODO suppress the error (seems not possible)
- * maybe I should report a bug
- */
-#define genericLinkedListInternals(class, elemType, toString_) \
+#define genericLinkedListInternals(class, elemType, toStringFn) \
   LinkedList_t __##class##_create() { \
-    return LinkedList.create(sizeof(elemType)); \
+    LinkedList_t list = LinkedList.create(); \
+    LinkedList.init(list, sizeof(elemType), toStringFn); \
+    return list; \
   } \
    \
   elemType __##class##_get(LinkedList_t list, int i) { \
@@ -57,41 +69,33 @@
     LinkedList.insert(list, i, &val); \
   } \
    \
-  bool __##class##_forEachIntermediate(LinkedList_t list, Object element, Object ctx) { \
-    Pair *p = (Pair*) ctx; \
-    return ((bool(*)(LinkedList_t, elemType, Object))(p->first))(list, *(elemType*)element, p->second); \
+  int __##class##_indexOf(LinkedList_t list, elemType val) { \
+    return LinkedList.indexOf(list, &val); \
   } \
    \
-  void __##class##_forEach(LinkedList_t list, bool (*func)(LinkedList_t list, elemType element, Object ctx), Object ctx) { \
-    Pair p = {func, ctx}; \
-    LinkedList.forEach(list, __##class##_forEachIntermediate, &p); \
-  } \
-   \
-  int __##class##_find(LinkedList_t list, elemType val) { \
+  Object __##class##_find(LinkedList_t list, elemType val) { \
     return LinkedList.find(list, &val); \
   } \
    \
-  String_t __##class##_toString(LinkedList_t list) { \
-    if (toString_) { \
-      String_t str = String.fromCStr("["); \
-      for (int i = 0; i < list->size; i++) {\
-        String.addAll(str, toString_(__##class##_get(list, i))); \
-        if (i < list->size - 1) String.appendCStr(str, ", "); \
-      } \
-      String.add(str, ']'); \
-      /*TODO trim to size*/ \
-      return str; \
-    } \
-    return LinkedList.toString(list); \
+  elemType __##class##_iterGet(LinkedList_t list, Object iter) { \
+    return *(elemType*)LinkedList.iterGet(list, iter); \
+  } \
+   \
+  void __##class##_iterSet(LinkedList_t list, Object iter, elemType val) { \
+    LinkedList.iterSet(list, iter, &val); \
+  } \
+   \
+  void __##class##_iterInsert(LinkedList_t list, Object iter, elemType val) { \
+    LinkedList.iterInsert(list, iter, &val); \
   }
 
 
-#define genericLinkedListImplementation(class, elemType, toString) \
-  genericLinkedListInternals(class, elemType, toString) \
-  class##_t_ class = { \
+#define genericLinkedListImplementation(class, elemType, toStringFn) \
+  genericLinkedListInternals(class, elemType, toStringFn); \
+  class##_c class = { \
     __##class##_create, \
     __LinkedList_destroy, \
-    __##class##_toString, \
+    __LinkedList_toString, \
     __##class##_get, \
     __##class##_set, \
     __##class##_add, \
@@ -100,6 +104,17 @@
     __LinkedList_insertAll, \
     __LinkedList_remove, \
     __LinkedList_clear, \
-    __##class##_forEach, \
-    __##class##_find \
+    __##class##_indexOf, \
+    __LinkedList_iter, \
+    __LinkedList_begin, \
+    __LinkedList_end, \
+    __##class##_find, \
+    __LinkedList_iterNext, \
+    __LinkedList_iterPrev, \
+    __LinkedList_iterJump, \
+    __##class##_iterGet, \
+    __##class##_iterSet, \
+    __##class##_iterInsert, \
+    __LinkedList_iterInsertAll, \
+    __LinkedList_iterRemove \
   };

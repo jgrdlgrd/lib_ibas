@@ -125,7 +125,7 @@ CString nextText() {
   return text;
 }
 
-Scanner_t_ Scanner = {
+Scanner_c Scanner = {
     NULL,
     " \t\n",
     next,

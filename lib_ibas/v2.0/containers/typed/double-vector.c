@@ -4,4 +4,4 @@
 
 #include "double-vector.h"
 
-genericVectorImplementation(DoubleVector, double, String.fromDouble)
+genericVectorImplementation(DoubleVector, double, String.fromDouble);

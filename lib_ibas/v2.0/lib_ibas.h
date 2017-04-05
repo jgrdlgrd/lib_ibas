@@ -8,15 +8,6 @@
 //TODO document everything :D
 //TODO test everything :D
 
-#include "lib_ibas/v2.0/base/base.h"
-#include "lib_ibas/v2.0/base/string.h"
-#include "lib_ibas/v2.0/io/console.h"
-
-//TODO optimize capabilities provided here
-//TODO rethink method names
-declareClass(Ibas, {
-  void (*init)();
-  void (*finish)();
-
-  Object (*alloc)(size_t size, CString message);
-})
+#include "base/base.h"
+#include "base/string.h"
+#include "io/console.h"

@@ -16,7 +16,7 @@ declareType(Vector, {
   size_t elemSize;
   size_t capacity;
   Object storage;
-})
+});
 
 declareClass(Vector, {
   Vector_t (*create)(size_t size, size_t elemSize);
@@ -42,7 +42,7 @@ declareClass(Vector, {
   int (*find)(Vector_t vec, Object obj);
 
   void (*ensureCapacity)(Vector_t vec, size_t capacity);
-})
+});
 
 //export internals
 Vector_t __Vector_create(size_t capacity, size_t elemSize);

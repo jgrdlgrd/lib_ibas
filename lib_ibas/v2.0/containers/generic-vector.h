@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "../lib_ibas.h"
 #include "vector.h"
+#include "../base/string.h"
 
 #define genericVectorDeclaration(class, elemType) \
   typedef Vector_t class##_t; \
@@ -30,7 +30,7 @@
     int (*find)(class##_t vec, elemType val); \
      \
     void (*ensureCapacity)(class##_t vec, size_t capacity); \
-  })
+  });
 
 
 /*
@@ -90,8 +90,8 @@
 
 
 #define genericVectorImplementation(class, elemType, toString) \
-  genericVectorInternals(class, elemType, toString) \
-  class##_t_ class = { \
+  genericVectorInternals(class, elemType, toString); \
+  class##_c class = { \
     __##class##_create, \
     __Vector_destroy, \
     __##class##_toString, \

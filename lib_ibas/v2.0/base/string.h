@@ -4,12 +4,14 @@
 
 #pragma once
 
-#include "../lib_ibas.h"
+#include "base.h"
 #include "../containers/vector.h"
 #include "../containers/generic-vector.h"
 
 typedef Vector_s String_s;
 typedef Vector_t String_t;
+
+typedef String_t (*ToString_t)(Object);
 
 declareClass(String, {
   String_t (*create)(size_t size);
@@ -42,4 +44,4 @@ declareClass(String, {
 
   void (*appendCStr)(String_t str, CString cstr);
   void (*prependCStr)(String_t str, CString cstr);
-})
+});

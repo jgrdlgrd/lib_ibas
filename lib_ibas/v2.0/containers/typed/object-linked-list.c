@@ -4,4 +4,4 @@
 
 #include "object-linked-list.h"
 
-genericLinkedListImplementation(ObjectLinkedList, Object, String.fromObject)
+genericLinkedListImplementation(ObjectLinkedList, Object, String.fromObject);

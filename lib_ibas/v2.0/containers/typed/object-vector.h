@@ -6,4 +6,4 @@
 
 #include "../generic-vector.h"
 
-genericVectorDeclaration(ObjectVector, Object)
+genericVectorDeclaration(ObjectVector, Object);

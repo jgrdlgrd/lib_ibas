@@ -5,7 +5,7 @@
 #include "vector.h"
 
 //we couldn't include it in the header because of a circular dependency
-#include "../lib_ibas.h"
+#include "../base/string.h"
 
 Vector_t __Vector_create(size_t capacity, size_t elemSize) {
   if (!elemSize) throw(IllegalArgumentException, "ElemSize must be greater than zero");
@@ -110,7 +110,7 @@ String_t __Vector_toString(Vector_t vec) {
   return String.format("[[Vector size=%zd elemSize=%zd storage=%p]]", vec->size, vec->elemSize, vec->storage);
 }
 
-Vector_t_ Vector = {
+Vector_c Vector = {
     __Vector_create,
     __Vector_destroy,
     __Vector_toString,

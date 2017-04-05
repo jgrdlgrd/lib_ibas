@@ -62,9 +62,9 @@ void __String_prependCStr(String_t str, CString cstr) {
   __Vector_insertSlice(str, 0, cstr, strlen(cstr));
 }
 
-genericVectorInternals(_String, char, NULL)
+genericVectorInternals(_String, char, NULL);
 
-String_t_ String = {
+String_c String = {
     ___String_create,
     __Vector_destroy,
     __String_toString,

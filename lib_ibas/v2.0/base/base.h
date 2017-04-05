@@ -35,3 +35,12 @@ typedef struct {
 typedef struct {
   Object first, second, third;
 } Triple;
+
+//TODO optimize capabilities provided here
+//TODO rethink method names
+declareClass(Ibas, {
+  void (*init)();
+  void (*finish)();
+
+  Object (*alloc)(size_t size, CString message);
+});

@@ -6,4 +6,4 @@
 
 #include "../generic-linked-list.h"
 
-genericLinkedListDeclaration(DoubleLinkedList, double)
+genericLinkedListDeclaration(DoubleLinkedList, double);

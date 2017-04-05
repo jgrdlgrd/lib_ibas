@@ -4,4 +4,8 @@
 
 #include "double-linked-list.h"
 
-genericLinkedListImplementation(DoubleLinkedList, double, String.fromDouble)
+String_t __DoubleLinkedList_toStringFn(Object ptr) {
+  return String.fromDouble(*(double *) ptr);
+}
+
+genericLinkedListImplementation(DoubleLinkedList, double, __DoubleLinkedList_toStringFn);

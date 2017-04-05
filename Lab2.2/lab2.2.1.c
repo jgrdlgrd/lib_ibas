@@ -3,8 +3,7 @@
 //
 
 #include "lib_ibas/v2.0/lib_ibas.h"
-#include "lib_ibas/v2.0/containers/linked-list.h"
-#include "lib_ibas/v2.0/containers/typed/double-vector.h"
+#include "lib_ibas/v2.0/containers/typed/double-linked-list.h"
 
 int doTask();
 
@@ -14,6 +13,7 @@ int main() {
 
   try {
         Console.setRusLocale();
+        Console.autoDestroyStrings = true;
 
         printf("Вас приветствует программа для поиска седловых точек в матрице\n"
                    "(седловой точкой называется элемент, являющийся минимумом в своём столбце и максимумом в своей строке).\n"
@@ -33,11 +33,31 @@ int main() {
 }
 
 int doTask() {
-  LinkedList_t list = LinkedList.create(5);
-  printf("got it");
-  list = LinkedList.create(0);
+  printf("got it\n");
 
-  DoubleVector_t dv = DoubleVector.create(5);
+  DoubleLinkedList_t dv = DoubleLinkedList.create();
+  DoubleLinkedList.add(dv, 16);
+  DoubleLinkedList.add(dv, 154.25);
+
+  DoubleLinkedList_t dv2 = DoubleLinkedList.create();
+  DoubleLinkedList.add(dv2, 8888);
+  DoubleLinkedList.add(dv2, 9999);
+  DoubleLinkedList.insertAll(dv2, 1, dv);
+  DoubleLinkedList.remove(dv2, 3);
+
+  Console.print(DoubleLinkedList.toString(dv));
+  Console.newLine();
+  Console.print(DoubleLinkedList.toString(dv2));
+  Console.newLine();
+
+  DoubleLinkedList.clear(dv);
+  DoubleLinkedList.addAll(dv2, dv);
+
+  Console.print(DoubleLinkedList.toString(dv2));
+  Console.newLine();
+
+  printf("%d", DoubleLinkedList.indexOf(dv2, 16));
+  Console.newLine();
 
   return 0;
 }
