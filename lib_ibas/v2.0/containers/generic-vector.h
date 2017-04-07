@@ -11,36 +11,47 @@
   typedef Vector_t class##_t; \
    \
   declareClass(class, { \
-    class##_t (*create)(size_t size); \
-    void (*destroy)(class##_t vec); \
-    String_t (*toString)(class##_t vec); \
+    Vector_t (*create)(size_t capacity); \
+    void (*destroy)(Vector_t vec); \
+    String_t (*toString)(Vector_t vec); \
      \
-    elemType (*get)(class##_t vec, int i); \
-    void (*set)(class##_t vec, int i, elemType val); \
+    void (*ensureCapacity)(Vector_t vec, size_t capacity); \
      \
-    void (*add)(class##_t vec, elemType val); \
-    void (*insert)(class##_t vec, int i, elemType val); \
-    void (*addAll)(class##_t vec1, class##_t vec2); \
-    void (*insertAll)(class##_t vec1, int i, class##_t vec2); \
+    elemType (*get)(Vector_t vec, int i); \
+    void (*set)(Vector_t vec, int i, elemType val); \
      \
-    void (*remove)(class##_t vec, int i); \
-    void (*clear)(class##_t vec); \
+    void (*add)(Vector_t vec, elemType val); \
+    void (*insert)(Vector_t vec, int i, elemType val); \
+    void (*addAll)(Vector_t vec1, Vector_t vec2); \
+    void (*insertAll)(Vector_t vec1, int i, Vector_t vec2); \
      \
-    void (*forEach)(class##_t vec, bool (*func)(class##_t vec, elemType val, Object ctx), Object ctx); \
-    int (*find)(class##_t vec, elemType val); \
+    void (*remove)(Vector_t vec, int i); \
+    void (*clear)(Vector_t vec); \
      \
-    void (*ensureCapacity)(class##_t vec, size_t capacity); \
+    int (*indexOf)(Vector_t vec, elemType obj); \
+     \
+    Object (*iter)(Vector_t vec, int i); \
+    Object (*begin)(Vector_t vec); \
+    Object (*end)(Vector_t vec); \
+    Object (*find)(Vector_t vec, elemType val); \
+     \
+    Object (*iterNext)(Vector_t vec, Object iter); \
+    Object (*iterPrev)(Vector_t vec, Object iter); \
+    Object (*iterJump)(Vector_t vec, Object iter, int length); \
+     \
+    elemType (*iterGet)(Vector_t vec, Object iter); \
+    void (*iterSet)(Vector_t vec, Object iter, elemType val); \
+     \
+    void (*iterInsert)(Vector_t vec, Object iter, elemType val); \
+    void (*iterInsertAll)(Vector_t vec1, Object iter, Vector_t vec2); \
+     \
+    void (*iterRemove)(Vector_t vec, Object iter); \
   });
 
 
-/*
- * CLion shows an error after substituting this macro, but actually there's no error
- * TODO suppress the error (seems not possible)
- * maybe I should report a bug
- */
-#define genericVectorInternals(class, elemType, toString_) \
-  Vector_t __##class##_create(size_t size) { \
-    return Vector.create(size, sizeof(elemType)); \
+#define genericVectorInternals(class, elemType, toStringFn) \
+  Vector_t __##class##_create(size_t capacity) { \
+    return Vector.create(sizeof(elemType), capacity, toStringFn); \
   } \
    \
   elemType __##class##_get(Vector_t vec, int i) { \
@@ -59,42 +70,34 @@
     Vector.insert(vec, i, &val); \
   } \
    \
-  bool __##class##_forEachIntermediate(Vector_t vec, Object element, Object ctx) { \
-    Pair *p = (Pair*) ctx; \
-    return ((bool(*)(Vector_t, elemType, Object))(p->first))(vec, *(elemType*)element, p->second); \
+  int __##class##_indexOf(Vector_t vec, elemType val) { \
+    return Vector.indexOf(vec, &val); \
   } \
    \
-  void __##class##_forEach(Vector_t vec, bool (*func)(Vector_t vec, elemType element, Object ctx), Object ctx) { \
-    Pair p = {func, ctx}; \
-    Vector.forEach(vec, __##class##_forEachIntermediate, &p); \
-  } \
-   \
-  int __##class##_find(Vector_t vec, elemType val) { \
+  Object __##class##_find(Vector_t vec, elemType val) { \
     return Vector.find(vec, &val); \
   } \
    \
-  String_t __##class##_toString(Vector_t vec) { \
-    if (toString_) { \
-      String_t (*toStr)(elemType elem) = toString_; \
-      String_t str = String.fromCStr("["); \
-      for (int i = 0; i < vec->size; i++) {\
-        String.addAll(str, toStr(__##class##_get(vec, i))); \
-        if (i < vec->size - 1) String.appendCStr(str, ", "); \
-      } \
-      String.add(str, ']'); \
-      /*TODO trim to size*/ \
-      return str; \
-    } \
-    return Vector.toString(vec); \
+  elemType __##class##_iterGet(Vector_t vec, Object iter) { \
+    return *(elemType*)Vector.iterGet(vec, iter); \
+  } \
+   \
+  void __##class##_iterSet(Vector_t vec, Object iter, elemType val) { \
+    Vector.iterSet(vec, iter, &val); \
+  } \
+   \
+  void __##class##_iterInsert(Vector_t vec, Object iter, elemType val) { \
+    Vector.iterInsert(vec, iter, &val); \
   }
 
 
-#define genericVectorImplementation(class, elemType, toString) \
-  genericVectorInternals(class, elemType, toString); \
+#define genericVectorImplementation(class, elemType, toStringFn) \
+  genericVectorInternals(class, elemType, toStringFn); \
   class##_c class = { \
     __##class##_create, \
     __Vector_destroy, \
-    __##class##_toString, \
+    __Vector_toString, \
+    __Vector_ensureCapacity, \
     __##class##_get, \
     __##class##_set, \
     __##class##_add, \
@@ -103,7 +106,17 @@
     __Vector_insertAll, \
     __Vector_remove, \
     __Vector_clear, \
-    __##class##_forEach, \
+    __##class##_indexOf, \
+    __Vector_iter, \
+    __Vector_begin, \
+    __Vector_end, \
     __##class##_find, \
-    __Vector_ensureCapacity \
+    __Vector_iterNext, \
+    __Vector_iterPrev, \
+    __Vector_iterJump, \
+    __##class##_iterGet, \
+    __##class##_iterSet, \
+    __##class##_iterInsert, \
+    __Vector_iterInsertAll, \
+    __Vector_iterRemove \
   };

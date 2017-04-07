@@ -4,7 +4,7 @@
 
 #include "scanner.h"
 
-CString _nextToken(bool skipPrefix) {
+CString __Scanner_nextToken_(bool skipPrefix) {
   CString buffer = NULL, oldBuffer = NULL;
   int length = 0, allocated = 0;
   char ch;
@@ -39,12 +39,12 @@ CString _nextToken(bool skipPrefix) {
   return buffer;
 }
 
-CString nextToken() {
-  return _nextToken(true);
+CString __Scanner_nextToken() {
+  return __Scanner_nextToken_(true);
 }
 
-int next(CString format, void *dest) {
-  CString token = nextToken();
+int __Scanner_next(CString format, void *dest) {
+  CString token = Scanner.nextToken();
 
   if (!token) {
     return -1;
@@ -76,10 +76,10 @@ int next(CString format, void *dest) {
   return 0;
 }
 
-int nextInt() {
+int __Scanner_nextInt() {
   int ret = 0;
 
-  int err = next("%d", &ret);
+  int err = Scanner.next("%d", &ret);
   if (err) {
     errno = err;
   }
@@ -87,10 +87,10 @@ int nextInt() {
   return ret;
 }
 
-double nextDouble() {
+double __Scanner_nextDouble() {
   double ret = 0;
 
-  int err = next("%lf", &ret);
+  int err = Scanner.next("%lf", &ret);
   if (err) {
     errno = err;
   }
@@ -98,24 +98,24 @@ double nextDouble() {
   return ret;
 }
 
-CString nextLine() {
+CString __Scanner_nextLine() {
   CString delims = Scanner.delimiters;
   Scanner.delimiters = "\n";
 
-  CString ret = _nextToken(false);
+  CString ret = __Scanner_nextToken_(false);
 
   Scanner.delimiters = delims;
   return ret;
 }
 
 //TODO rewrite
-CString nextText() {
+CString __Scanner_nextText() {
   char *text, *nextL;
-  text = nextLine();
+  text = Scanner.nextLine();
   if (*text == '\0')
     return text;
   size_t length = strlen(text) + 2, newLength;
-  while ((newLength = strlen(nextL = nextLine()))) {
+  while ((newLength = strlen(nextL = Scanner.nextLine()))) {
     *(text + length - 2) = '\n';
     length += newLength + 1;
     realloc(text, length);
@@ -128,10 +128,10 @@ CString nextText() {
 Scanner_c Scanner = {
     NULL,
     " \t\n",
-    next,
-    nextToken,
-    nextInt,
-    nextDouble,
-    nextLine,
-    nextText
+    __Scanner_next,
+    __Scanner_nextToken,
+    __Scanner_nextInt,
+    __Scanner_nextDouble,
+    __Scanner_nextLine,
+    __Scanner_nextText
 };

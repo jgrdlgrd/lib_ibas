@@ -8,35 +8,16 @@ String_t __String_toString(String_t str) {
   return str;
 }
 
-String_t __String_fromCStr(CString cstr) {
-  String_t str = String.create(0);
-  __Vector_insertSlice(str, 0, cstr, strlen(cstr));
-  return str;
-}
-
-String_t __String_fromInt(int val) {
-  return String.format("%d", val);
-}
-
-String_t __String_fromDouble(double val) {
-  return String.format("%lf", val);
-}
-
-//TODO implement
-String_t __String_fromObject(Object obj) {
-  throw(RuntimeException, "Not implemented!");
-}
-
 String_t __String_format(CString format, ...) {
   va_list va;
   va_start(va, format);
 
   int size = vsnprintf(NULL, 0, format, va);
-  if (size < 0) throw(IllegalArgumentException, "String.format() failed");
+  if (size < 0) throw(IllegalArgumentException, "String.format() failed!");
 
   String_t str = String.create((size_t) size + 1);
   size = vsnprintf(str->storage, (size_t) size + 1, format, va);
-  if (size < 0) throw(IllegalArgumentException, "String.format() failed");
+  if (size < 0) throw(IllegalArgumentException, "String.format() failed!");
   str->size = (size_t) size;
 
   va_end(va);
@@ -68,6 +49,7 @@ String_c String = {
     ___String_create,
     __Vector_destroy,
     __String_toString,
+    __Vector_ensureCapacity,
     ___String_get,
     ___String_set,
     ___String_add,
@@ -76,13 +58,19 @@ String_c String = {
     __Vector_insertAll,
     __Vector_remove,
     __Vector_clear,
-    ___String_forEach,
+    ___String_indexOf,
+    __Vector_iter,
+    __Vector_begin,
+    __Vector_end,
     ___String_find,
-    __Vector_ensureCapacity,
-    __String_fromCStr,
-    __String_fromInt,
-    __String_fromDouble,
-    __String_fromObject,
+    __Vector_iterNext,
+    __Vector_iterPrev,
+    __Vector_iterJump,
+    ___String_iterGet,
+    ___String_iterSet,
+    ___String_iterInsert,
+    __Vector_iterInsertAll,
+    __Vector_iterRemove,
     __String_format,
     __String_concat,
     __String_appendCStr,

@@ -13,23 +13,19 @@
   if ((LinkedList_t) obj->elemSize == 0) throw(IllegalArgumentException, "LinkedList: trying to operate on non-initialized instance!");
 }*/
 
-LinkedList_t __LinkedList_create() {
+LinkedList_t __LinkedList_create(size_t elemSize, ToString_t toStringFn) {
+  if (!elemSize) throw(IllegalArgumentException, "LinkedList: elemSize must be greater than zero!");
+
   LinkedList_t list = Ibas.alloc(sizeof(LinkedList_s), NULL);
 
   list->class = &LinkedList;
-  list->elemSize = list->size = 0;
+  list->size = 0;
   list->head = &list->head;
   list->tail = &list->tail;
-  list->toStringFn = NULL;
-
-  return list;
-}
-
-void __LinkedList_init(LinkedList_t list, size_t elemSize, ToString_t toStringFn) {
-  if (!elemSize) throw(IllegalArgumentException, "LinkedList: elemSize must be greater than zero!");
-
   list->elemSize = elemSize;
   list->toStringFn = toStringFn;
+
+  return list;
 }
 
 void __LinkedList_destroy(LinkedList_t list) {
@@ -37,6 +33,28 @@ void __LinkedList_destroy(LinkedList_t list) {
 
   LinkedList.clear(list);
   free(list);
+}
+
+String_t __LinkedList_ts(LinkedList_t list, ToString_t tstr) {
+  String_t str = ToString.CStr("[");
+
+  for (Object i = LinkedList.begin(list); ; ) {
+    String.addAll(str, tstr(LinkedList.iterGet(list, i)));
+
+    i = LinkedList.iterNext(list, i);
+    if (i == LinkedList.end(list)) break;
+
+    String.appendCStr(str, ", ");
+  }
+
+  String.add(str, ']');
+  /*TODO trim to size*/
+  return str;
+}
+
+String_t __LinkedList_toString(LinkedList_t list) {
+  if (list->toStringFn) return __LinkedList_ts(list, list->toStringFn);
+  else return String.format("[[LinkedList size=%zd elemSize=%zd head=%p tail=%p]]", list->size, list->elemSize, list->head, list->tail);
 }
 
 Object __LinkedList_get(LinkedList_t list, int i) {
@@ -63,6 +81,7 @@ void __LinkedList_add(LinkedList_t list, Object val) {
 
 void __LinkedList_insertAll(LinkedList_t list1, int i, LinkedList_t list2) {
   if (i < 0 || i > list1->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
+
   LinkedList.iterInsertAll(list1, LinkedList.iter(list1, i), list2);
 }
 
@@ -72,6 +91,7 @@ void __LinkedList_addAll(LinkedList_t list1, LinkedList_t list2) {
 
 void __LinkedList_remove(LinkedList_t list, int i) {
   if (i < 0 || i >= list->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
+
   LinkedList.iterRemove(list, LinkedList.iter(list, i));
 }
 
@@ -88,12 +108,12 @@ void __LinkedList_clear(LinkedList_t list) {
   list->tail = &list->tail;
 }
 
-int __LinkedList_indexOf(LinkedList_t list, Object obj) {
+int __LinkedList_indexOf(LinkedList_t list, Object val) {
   int i = 0;
   Object it = LinkedList.begin(list), end = LinkedList.end(list);
 
   for (; it != end; it = LinkedList.iterNext(list, it)) {
-    if (!memcmp(LinkedList.iterGet(list, it), obj, list->elemSize)) break;
+    if (!memcmp(LinkedList.iterGet(list, it), val, list->elemSize)) break;
     i++;
   }
 
@@ -112,21 +132,13 @@ Object __LinkedList_end(LinkedList_t list) {
   return &list->head;
 }
 
-Object __LinkedList_find(LinkedList_t list, Object obj) {
+Object __LinkedList_find(LinkedList_t list, Object val) {
   Object it = LinkedList.begin(list);
   for (; it != LinkedList.end(list); it = LinkedList.iterNext(list, it)) {
-    if (!memcmp(LinkedList.iterGet(list, it), obj, list->elemSize)) break;
+    if (!memcmp(LinkedList.iterGet(list, it), val, list->elemSize)) break;
   }
 
   return it;
-}
-
-Object __LinkedList_iterGet(LinkedList_t list, Object iter) {
-  return iter + 2 * __PTR_SIZE;
-}
-
-void __LinkedList_iterSet(LinkedList_t list, Object iter, Object val) {
-  memcpy(iter + 2 * __PTR_SIZE, val, list->elemSize);
 }
 
 Object __LinkedList_iterNext(LinkedList_t list, Object iter) {
@@ -154,6 +166,14 @@ Object __LinkedList_iterJump(LinkedList_t list, Object iter, int length) {
   return it;
 }
 
+Object __LinkedList_iterGet(LinkedList_t list, Object iter) {
+  return iter + 2 * __PTR_SIZE;
+}
+
+void __LinkedList_iterSet(LinkedList_t list, Object iter, Object val) {
+  memcpy(iter + 2 * __PTR_SIZE, val, list->elemSize);
+}
+
 void __LinkedList_iterInsert(LinkedList_t list, Object iter, Object val) {
   void **next = iter;
   void **prev = *(next + 1) - __PTR_SIZE;
@@ -170,7 +190,7 @@ void __LinkedList_iterInsert(LinkedList_t list, Object iter, Object val) {
 }
 
 void __LinkedList_iterInsertAll(LinkedList_t list1, Object iter, LinkedList_t list2) {
-  if (list1->elemSize != list2->elemSize) throw(IllegalArgumentException, "LinkedList element sizes don't match!");
+  if (list1->elemSize != list2->elemSize) throw(IllegalArgumentException, "LinkedList: element sizes don't match!");
 
   for (Object i = LinkedList.begin(list2); i != LinkedList.end(list2); i = LinkedList.iterNext(list2, i)) {
     LinkedList.iterInsert(list1, iter, LinkedList.iterGet(list2, i));
@@ -189,33 +209,10 @@ void __LinkedList_iterRemove(LinkedList_t list, Object iter) {
   list->size--;
 }
 
-String_t cts(LinkedList_t list, ToString_t tstr) {
-  String_t str = String.fromCStr("[");
-
-  for (Object i = LinkedList.begin(list); ; ) {
-    String.addAll(str, tstr(LinkedList.iterGet(list, i)));
-
-    i = LinkedList.iterNext(list, i);
-    if (i == LinkedList.end(list)) break;
-
-    String.appendCStr(str, ", ");
-  }
-
-  String.add(str, ']');
-  /*TODO trim to size*/
-  return str; \
-}
-
-String_t __LinkedList_toString(LinkedList_t list) {
-  if (list->elemSize && list->toStringFn) return cts(list, list->toStringFn);
-  else return String.format("[[LinkedList size=%zd elemSize=%zd head=%p tail=%p]]", list->size, list->elemSize, list->head, list->tail);
-}
-
 LinkedList_c LinkedList = {
     __LinkedList_create,
     __LinkedList_destroy,
     __LinkedList_toString,
-    __LinkedList_init,
     __LinkedList_get,
     __LinkedList_set,
     __LinkedList_add,

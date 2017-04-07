@@ -30,7 +30,7 @@
     Object (*iter)(LinkedList_t list, int i); \
     Object (*begin)(LinkedList_t list); \
     Object (*end)(LinkedList_t list); \
-    Object (*find)(LinkedList_t list, elemType obj); \
+    Object (*find)(LinkedList_t list, elemType val); \
      \
     Object (*iterNext)(LinkedList_t list, Object iter); \
     Object (*iterPrev)(LinkedList_t list, Object iter); \
@@ -48,9 +48,7 @@
 
 #define genericLinkedListInternals(class, elemType, toStringFn) \
   LinkedList_t __##class##_create() { \
-    LinkedList_t list = LinkedList.create(); \
-    LinkedList.init(list, sizeof(elemType), toStringFn); \
-    return list; \
+    return LinkedList.create(sizeof(elemType), toStringFn); \
   } \
    \
   elemType __##class##_get(LinkedList_t list, int i) { \

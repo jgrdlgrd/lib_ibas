@@ -7,15 +7,16 @@
 //we couldn't include it in the header because of a circular dependency
 #include "../base/string.h"
 
-Vector_t __Vector_create(size_t capacity, size_t elemSize) {
-  if (!elemSize) throw(IllegalArgumentException, "ElemSize must be greater than zero");
+Vector_t __Vector_create(size_t elemSize, size_t capacity, ToString_t toStringFn) {
+  if (!elemSize) throw(IllegalArgumentException, "Vector: elemSize must be greater than zero!");
 
   Vector_t vec = Ibas.alloc(sizeof(Vector_s), NULL);
-  if (!vec) throw(NotEnoughMemoryException, "Could not allocate the vector");
 
+  vec->class = &Vector;
+  vec->size = vec->capacity = 0;
   vec->storage = NULL;
-  vec->capacity = vec->size = 0;
   vec->elemSize = elemSize;
+  vec->toStringFn = toStringFn;
 
   Vector.ensureCapacity(vec, capacity);
 
@@ -23,19 +24,32 @@ Vector_t __Vector_create(size_t capacity, size_t elemSize) {
 }
 
 void __Vector_destroy(Vector_t vec) {
-  if (vec) {
-    free(vec->storage);
-    free(vec);
+  if (!vec) return;
+
+  Vector.clear(vec);
+  free(vec);
+}
+
+String_t __Vector_ts(Vector_t vec, ToString_t tstr) {
+  String_t str = ToString.CStr("[");
+
+  for (Object i = Vector.begin(vec); ; ) {
+    String.addAll(str, tstr(Vector.iterGet(vec, i)));
+
+    i = Vector.iterNext(vec, i);
+    if (i == Vector.end(vec)) break;
+
+    String.appendCStr(str, ", ");
   }
+
+  String.add(str, ']');
+  /*TODO trim to size*/
+  return str;
 }
 
-Object __Vector_get(Vector_t vec, int i) {
-  if (i < 0 || i >= vec->size) throw(IllegalArgumentException, "Vector index out of bounds");
-  return vec->storage + i * vec->elemSize;
-}
-
-void __Vector_set(Vector_t vec, int i, Object val) {
-  memcpy(Vector.get(vec, i), val, vec->elemSize);
+String_t __Vector_toString(Vector_t vec) {
+  if (vec->toStringFn) return __Vector_ts(vec, vec->toStringFn);
+  else return String.format("[[Vector size=%zd elemSize=%zd storage=%p]]", vec->size, vec->elemSize, vec->storage);
 }
 
 void __Vector_ensureCapacity(Vector_t vec, size_t capacity) {
@@ -48,8 +62,20 @@ void __Vector_ensureCapacity(Vector_t vec, size_t capacity) {
   vec->capacity = capacity;
 }
 
+Object __Vector_get(Vector_t vec, int i) {
+  if (i < 0 || i >= vec->size) throw(IllegalArgumentException, "Vector: index out of bounds!");
+
+  return Vector.iterGet(vec, Vector.iter(vec, i));
+}
+
+void __Vector_set(Vector_t vec, int i, Object val) {
+  if (i < 0 || i >= vec->size) throw(IllegalArgumentException, "Vector: index out of bounds!");
+
+  Vector.iterSet(vec, Vector.iter(vec, i), val);
+}
+
 void __Vector_insertSlice(Vector_t vec, int i, void *slice, size_t size) {
-  if (i < 0 || i > vec->size) throw(IllegalArgumentException, "Vector index out of bounds");
+  if (i < 0 || i > vec->size) throw(IllegalArgumentException, "Vector: index out of bounds!");
 
   size_t cap = vec->capacity;
   while (cap < vec->size + size) {
@@ -63,16 +89,6 @@ void __Vector_insertSlice(Vector_t vec, int i, void *slice, size_t size) {
   vec->size += size;
 }
 
-void __Vector_insertAll(Vector_t vec1, int i, Vector_t vec2) {
-  if (vec1->elemSize != vec2->elemSize) throw(IllegalArgumentException, "Vector element sizes don't match!");
-
-  __Vector_insertSlice(vec1, i, vec2->storage, vec2->size);
-}
-
-void __Vector_addAll(Vector_t vec1, Vector_t vec2) {
-  Vector.insertAll(vec1, (int) vec1->size, vec2);
-}
-
 void __Vector_insert(Vector_t vec, int i, Object val) {
   __Vector_insertSlice(vec, i, val, 1);
 }
@@ -81,39 +97,99 @@ void __Vector_add(Vector_t vec, Object val) {
   Vector.insert(vec, (int) vec->size, val);
 }
 
+void __Vector_insertAll(Vector_t vec1, int i, Vector_t vec2) {
+  if (vec1->elemSize != vec2->elemSize) throw(IllegalArgumentException, "Vector: element sizes don't match!");
+
+  __Vector_insertSlice(vec1, i, vec2->storage, vec2->size);
+}
+
+void __Vector_addAll(Vector_t vec1, Vector_t vec2) {
+  Vector.insertAll(vec1, (int) vec1->size, vec2);
+}
+
 void __Vector_remove(Vector_t vec, int i) {
-  Object ptr = __Vector_get(vec, i);
+  Object ptr = Vector.get(vec, i);
   memmove(ptr, ptr + vec->elemSize, vec->elemSize * (vec->size - i - 1));
   vec->size--;
 }
 
-void __Vector_forEach(Vector_t vec, bool (*func)(Vector_t vec, Object element, Object ctx), Object ctx) {
-  Object el = vec->storage;
-  for (int i = 0; i < vec->size && !func(vec, el, ctx); i++, el += vec->elemSize);
-}
-
-int __Vector_find(Vector_t vec, Object obj) {
-  Object el = vec->storage;
-  for (int i = 0; i < vec->size; i++, el += vec->elemSize) {
-    if (!memcpy(el, obj, vec->elemSize)) return i;
-  }
-
-  return -1;
-}
-
 void __Vector_clear(Vector_t vec) {
   free(vec->storage);
+
   vec->size = vec->capacity = 0;
+  vec->storage = NULL;
 }
 
-String_t __Vector_toString(Vector_t vec) {
-  return String.format("[[Vector size=%zd elemSize=%zd storage=%p]]", vec->size, vec->elemSize, vec->storage);
+int __Vector_indexOf(Vector_t vec, Object val) {
+  Object iter = Vector.find(vec, val);
+
+  if(iter == Vector.end(vec)) return -1;
+  else return (int) ((iter - vec->storage) / vec->elemSize);
+}
+
+Object __Vector_iter(Vector_t vec, int i) {
+  if (i < 0 || i >= vec->size) return Vector.end(vec);
+  else return vec->storage + i * vec->elemSize;
+}
+
+Object __Vector_begin(Vector_t vec) {
+  return vec->storage;
+}
+
+Object __Vector_end(Vector_t vec) {
+  return vec->storage + vec->size * vec->elemSize;
+}
+
+Object __Vector_find(Vector_t vec, Object val) {
+  Object it = Vector.begin(vec);
+  for (; it != Vector.end(vec); it = Vector.iterNext(vec, it)) {
+    if (!memcmp(Vector.iterGet(vec, it), val, vec->elemSize)) break;
+  }
+
+  return it;
+}
+
+Object __Vector_iterNext(Vector_t vec, Object iter) {
+  return Vector.iterJump(vec, iter, 1);
+}
+
+Object __Vector_iterPrev(Vector_t vec, Object iter) {
+  return Vector.iterJump(vec, iter, -1);
+}
+
+int __Vector_iterToIndex(Vector_t vec, Object iter) {
+  return (int) ((iter - vec->storage) / vec->elemSize);
+}
+
+Object __Vector_iterJump(Vector_t vec, Object iter, int length) {
+  return Vector.iter(vec, __Vector_iterToIndex(vec, iter) + length);
+}
+
+Object __Vector_iterGet(Vector_t vec, Object iter) {
+  return iter;
+}
+
+void __Vector_iterSet(Vector_t vec, Object iter, Object val) {
+  memcpy(iter, val, vec->elemSize);
+}
+
+void __Vector_iterInsert(Vector_t vec, Object iter, Object val) {
+  Vector.insert(vec, __Vector_iterToIndex(vec, iter), val);
+}
+
+void __Vector_iterInsertAll(Vector_t vec1, Object iter, Vector_t vec2) {
+  Vector.insertAll(vec1, __Vector_iterToIndex(vec1, iter), vec2);
+}
+
+void __Vector_iterRemove(Vector_t vec, Object iter) {
+  Vector.remove(vec, __Vector_iterToIndex(vec, iter));
 }
 
 Vector_c Vector = {
     __Vector_create,
     __Vector_destroy,
     __Vector_toString,
+    __Vector_ensureCapacity,
     __Vector_get,
     __Vector_set,
     __Vector_add,
@@ -122,7 +198,17 @@ Vector_c Vector = {
     __Vector_insertAll,
     __Vector_remove,
     __Vector_clear,
-    __Vector_forEach,
+    __Vector_indexOf,
+    __Vector_iter,
+    __Vector_begin,
+    __Vector_end,
     __Vector_find,
-    __Vector_ensureCapacity
+    __Vector_iterNext,
+    __Vector_iterPrev,
+    __Vector_iterJump,
+    __Vector_iterGet,
+    __Vector_iterSet,
+    __Vector_iterInsert,
+    __Vector_iterInsertAll,
+    __Vector_iterRemove
 };

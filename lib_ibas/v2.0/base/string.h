@@ -9,14 +9,16 @@
 #include "../containers/generic-vector.h"
 
 typedef Vector_s String_s;
-typedef Vector_t String_t;
+typedef String_s* String_t;
 
-typedef String_t (*ToString_t)(Object);
+#include "to-string.h"
 
 declareClass(String, {
-  String_t (*create)(size_t size);
+  String_t (*create)(size_t capacity);
   void (*destroy)(String_t str);
   String_t (*toString)(String_t str);
+
+  void (*ensureCapacity)(String_t str, size_t capacity);
 
   char (*get)(String_t str, int i);
   void (*set)(String_t str, int i, char val);
@@ -29,15 +31,24 @@ declareClass(String, {
   void (*remove)(String_t str, int i);
   void (*clear)(String_t str);
 
-  void (*forEach)(String_t str, bool (*func)(String_t str, char ch, Object ctx), Object ctx);
-  int (*find)(String_t str, char val);
+  int (*indexOf)(String_t str, char val);
 
-  void (*ensureCapacity)(String_t str, size_t capacity);
+  Object (*iter)(String_t str, int i);
+  Object (*begin)(String_t str);
+  Object (*end)(String_t str);
+  Object (*find)(String_t str, char obj);
 
-  String_t (*fromCStr)(CString cstr);
-  String_t (*fromInt)(int val);
-  String_t (*fromDouble)(double val);
-  String_t (*fromObject)(Object obj);
+  Object (*iterNext)(String_t str, Object iter);
+  Object (*iterPrev)(String_t str, Object iter);
+  Object (*iterJump)(String_t str, Object iter, int length);
+
+  char (*iterGet)(String_t str, Object iter);
+  void (*iterSet)(String_t str, Object iter, char val);
+
+  void (*iterInsert)(String_t str, Object iter, char val);
+  void (*iterInsertAll)(String_t str1, Object iter, String_t str2);
+
+  void (*iterRemove)(String_t str, Object iter);
 
   String_t (*format)(CString format, ...);
   String_t (*concat)(String_t str1, String_t str2);

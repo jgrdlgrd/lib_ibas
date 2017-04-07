@@ -4,8 +4,4 @@
 
 #include "int-linked-list.h"
 
-String_t __IntLinkedList_toStringFn(Object ptr) {
-  return String.fromInt(*(int *) ptr);
-}
-
-genericLinkedListImplementation(IntLinkedList, int, __IntLinkedList_toStringFn);
+genericLinkedListImplementation(IntLinkedList, int, (ToString_t) ToString.IntPtr);
