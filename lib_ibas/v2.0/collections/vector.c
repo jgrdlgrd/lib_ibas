@@ -12,7 +12,7 @@ Vector_t __Vector_create(size_t elemSize, size_t capacity, ToString_t toStringFn
 
   Vector_t vec = Ibas.alloc(sizeof(Vector_s), NULL);
 
-  vec->class = &Vector;
+  vec->class = &Vector_class;
   vec->size = vec->capacity = 0;
   vec->storage = NULL;
   vec->elemSize = elemSize;
@@ -30,25 +30,8 @@ void __Vector_destroy(Vector_t vec) {
   free(vec);
 }
 
-String_t __Vector_ts(Vector_t vec, ToString_t tstr) {
-  String_t str = ToString.CStr("[");
-
-  for (Object i = Vector.begin(vec); ; ) {
-    String.addAll(str, tstr(Vector.iterGet(vec, i)));
-
-    i = Vector.iterNext(vec, i);
-    if (i == Vector.end(vec)) break;
-
-    String.appendCStr(str, ", ");
-  }
-
-  String.add(str, ']');
-  /*TODO trim to size*/
-  return str;
-}
-
 String_t __Vector_toString(Vector_t vec) {
-  if (vec->toStringFn) return __Vector_ts(vec, vec->toStringFn);
+  if (vec->toStringFn) return List.toString(vec);
   else return String.format("[[Vector size=%zd elemSize=%zd storage=%p]]", vec->size, vec->elemSize, vec->storage);
 }
 
@@ -60,6 +43,10 @@ void __Vector_ensureCapacity(Vector_t vec, size_t capacity) {
 
   vec->storage = storage;
   vec->capacity = capacity;
+}
+
+ToString_t __Vector_getToStringFn(Vector_t vec) {
+  return vec->toStringFn;
 }
 
 Object __Vector_get(Vector_t vec, int i) {
@@ -190,6 +177,7 @@ Vector_c Vector = {
     __Vector_destroy,
     __Vector_toString,
     __Vector_ensureCapacity,
+    __Vector_getToStringFn,
     __Vector_get,
     __Vector_set,
     __Vector_add,
@@ -212,3 +200,5 @@ Vector_c Vector = {
     __Vector_iterInsertAll,
     __Vector_iterRemove
 };
+
+Object Vector_class[] = {implements(Vector, List, 4), NULL};

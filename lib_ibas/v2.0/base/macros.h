@@ -8,9 +8,16 @@
     typedef struct fields name##_s; \
     typedef name##_s* name##_t;
 
+#define declareInterface(name, members) \
+    typedef Object name##_t; \
+    typedef struct members *name##_i; \
+
 #define declareClass(name, members) \
     typedef struct members name##_c; \
-    extern name##_c name;
+    extern name##_c name; \
+    extern Object name##_class[];
+
+#define implements(className, interfaceName, offset) #interfaceName, (void *) &className + (offset) * sizeof(void *)
 
 //TODO consider other alternatives
 #define max(a,b) \

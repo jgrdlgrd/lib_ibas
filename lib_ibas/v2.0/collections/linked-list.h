@@ -6,6 +6,7 @@
 
 #include "../base/base.h"
 #include "../base/string.h"
+#include "list.h"
 
 declareType(LinkedList, {
   Object class;
@@ -21,40 +22,14 @@ declareClass(LinkedList, {
   void (*destroy)(LinkedList_t list);
   String_t (*toString)(LinkedList_t list);
 
-  Object (*get)(LinkedList_t list, int i);
-  void (*set)(LinkedList_t list, int i, Object val);
-
-  void (*add)(LinkedList_t list, Object val);
-  void (*insert)(LinkedList_t list, int i, Object val);
-  void (*addAll)(LinkedList_t list1, LinkedList_t list2);
-  void (*insertAll)(LinkedList_t list1, int i, LinkedList_t list2);
-
-  void (*remove)(LinkedList_t list, int i);
-  void (*clear)(LinkedList_t list);
-
-  int (*indexOf)(LinkedList_t list, Object val);
-
-  Object (*iter)(LinkedList_t list, int i);
-  Object (*begin)(LinkedList_t list);
-  Object (*end)(LinkedList_t list);
-  Object (*find)(LinkedList_t list, Object val);
-
-  Object (*iterNext)(LinkedList_t list, Object iter);
-  Object (*iterPrev)(LinkedList_t list, Object iter);
-  Object (*iterJump)(LinkedList_t list, Object iter, int length);
-
-  Object (*iterGet)(LinkedList_t list, Object iter);
-  void (*iterSet)(LinkedList_t list, Object iter, Object val);
-
-  void (*iterInsert)(LinkedList_t list, Object iter, Object val);
-  void (*iterInsertAll)(LinkedList_t list1, Object iter, LinkedList_t list2);
-
-  void (*iterRemove)(LinkedList_t list, Object iter);
+  ListMethods(LinkedList, list, Object);
 });
 
 //expose internals
 LinkedList_t __LinkedList_create(size_t elemSize, ToString_t toStringFn);
 void __LinkedList_destroy(LinkedList_t list);
+String_t __LinkedList_toString(LinkedList_t list);
+ToString_t __LinkedList_getToStringFn(LinkedList_t list);
 Object __LinkedList_get(LinkedList_t list, int i);
 void __LinkedList_set(LinkedList_t list, int i, Object val);
 void __LinkedList_insert(LinkedList_t list, int i, Object val);
@@ -76,4 +51,3 @@ Object __LinkedList_iterJump(LinkedList_t list, Object iter, int length);
 void __LinkedList_iterInsert(LinkedList_t list, Object iter, Object val);
 void __LinkedList_iterInsertAll(LinkedList_t list1, Object iter, LinkedList_t list2);
 void __LinkedList_iterRemove(LinkedList_t list, Object iter);
-String_t __LinkedList_toString(LinkedList_t list);

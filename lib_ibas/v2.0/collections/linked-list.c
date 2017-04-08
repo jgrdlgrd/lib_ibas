@@ -35,26 +35,13 @@ void __LinkedList_destroy(LinkedList_t list) {
   free(list);
 }
 
-String_t __LinkedList_ts(LinkedList_t list, ToString_t tstr) {
-  String_t str = ToString.CStr("[");
-
-  for (Object i = LinkedList.begin(list); ; ) {
-    String.addAll(str, tstr(LinkedList.iterGet(list, i)));
-
-    i = LinkedList.iterNext(list, i);
-    if (i == LinkedList.end(list)) break;
-
-    String.appendCStr(str, ", ");
-  }
-
-  String.add(str, ']');
-  /*TODO trim to size*/
-  return str;
+String_t __LinkedList_toString(LinkedList_t list) {
+  if (list->toStringFn) return List.toString(list);
+  else return String.format("[[LinkedList size=%zd elemSize=%zd head=%p tail=%p]]", list->size, list->elemSize, list->head, list->tail);
 }
 
-String_t __LinkedList_toString(LinkedList_t list) {
-  if (list->toStringFn) return __LinkedList_ts(list, list->toStringFn);
-  else return String.format("[[LinkedList size=%zd elemSize=%zd head=%p tail=%p]]", list->size, list->elemSize, list->head, list->tail);
+ToString_t __LinkedList_getToStringFn(LinkedList_t list) {
+  return list->toStringFn;
 }
 
 Object __LinkedList_get(LinkedList_t list, int i) {
@@ -213,6 +200,7 @@ LinkedList_c LinkedList = {
     __LinkedList_create,
     __LinkedList_destroy,
     __LinkedList_toString,
+    __LinkedList_getToStringFn,
     __LinkedList_get,
     __LinkedList_set,
     __LinkedList_add,
@@ -235,3 +223,5 @@ LinkedList_c LinkedList = {
     __LinkedList_iterInsertAll,
     __LinkedList_iterRemove
 };
+
+Object LinkedList_class[] = {implements(LinkedList, List, 3), NULL};

@@ -17,35 +17,7 @@
      \
     void (*ensureCapacity)(Vector_t vec, size_t capacity); \
      \
-    elemType (*get)(Vector_t vec, int i); \
-    void (*set)(Vector_t vec, int i, elemType val); \
-     \
-    void (*add)(Vector_t vec, elemType val); \
-    void (*insert)(Vector_t vec, int i, elemType val); \
-    void (*addAll)(Vector_t vec1, Vector_t vec2); \
-    void (*insertAll)(Vector_t vec1, int i, Vector_t vec2); \
-     \
-    void (*remove)(Vector_t vec, int i); \
-    void (*clear)(Vector_t vec); \
-     \
-    int (*indexOf)(Vector_t vec, elemType obj); \
-     \
-    Object (*iter)(Vector_t vec, int i); \
-    Object (*begin)(Vector_t vec); \
-    Object (*end)(Vector_t vec); \
-    Object (*find)(Vector_t vec, elemType val); \
-     \
-    Object (*iterNext)(Vector_t vec, Object iter); \
-    Object (*iterPrev)(Vector_t vec, Object iter); \
-    Object (*iterJump)(Vector_t vec, Object iter, int length); \
-     \
-    elemType (*iterGet)(Vector_t vec, Object iter); \
-    void (*iterSet)(Vector_t vec, Object iter, elemType val); \
-     \
-    void (*iterInsert)(Vector_t vec, Object iter, elemType val); \
-    void (*iterInsertAll)(Vector_t vec1, Object iter, Vector_t vec2); \
-     \
-    void (*iterRemove)(Vector_t vec, Object iter); \
+    ListMethods(Vector, vec, elemType); \
   });
 
 
@@ -98,6 +70,7 @@
     __Vector_destroy, \
     __Vector_toString, \
     __Vector_ensureCapacity, \
+    __Vector_getToStringFn, \
     __##class##_get, \
     __##class##_set, \
     __##class##_add, \

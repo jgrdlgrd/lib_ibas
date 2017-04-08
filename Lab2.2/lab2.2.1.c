@@ -3,7 +3,7 @@
 //
 
 #include "lib_ibas/v2.0/lib_ibas.h"
-#include "lib_ibas/v2.0/containers/typed/double-linked-list.h"
+#include "lib_ibas/v2.0/collections/typed/double-linked-list.h"
 
 int doTask();
 
@@ -53,6 +53,7 @@ int doTask() {
   DoubleLinkedList.clear(dv);
   DoubleLinkedList.addAll(dv2, dv);
 
+  dv2->toStringFn = NULL;
   Console.print(DoubleLinkedList.toString(dv2));
   Console.newLine();
 
