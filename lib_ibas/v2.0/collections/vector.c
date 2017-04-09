@@ -6,7 +6,7 @@
 #include "../base/ibas.h"
 #include "../base/string.h"
 
-Vector_t __Vector_create(size_t elemSize, size_t capacity, ToString_t toStringFn) {
+Vector_t __Vector_create(size_t elemSize, size_t capacity, ToString_t stringifier) {
   if (!elemSize) throw(IllegalArgumentException, "Vector: elemSize must be greater than zero!");
 
   Vector_t vec = Ibas.alloc(sizeof(Vector_s), NULL);
@@ -15,7 +15,7 @@ Vector_t __Vector_create(size_t elemSize, size_t capacity, ToString_t toStringFn
   vec->size = vec->capacity = 0;
   vec->storage = NULL;
   vec->elemSize = elemSize;
-  vec->toStringFn = toStringFn;
+  vec->stringifier = stringifier;
 
   Vector.ensureCapacity(vec, capacity);
 
@@ -30,7 +30,7 @@ void __Vector_destroy(Vector_t vec) {
 }
 
 String_t __Vector_toString(Vector_t vec) {
-  if (vec->toStringFn) return List.toString(vec);
+  if (vec->stringifier) return List.toString(vec, vec->stringifier);
   else return String.format("[[Vector size=%zd elemSize=%zd storage=%p]]", vec->size, vec->elemSize, vec->storage);
 }
 
@@ -42,10 +42,6 @@ void __Vector_ensureCapacity(Vector_t vec, size_t capacity) {
 
   vec->storage = storage;
   vec->capacity = capacity;
-}
-
-ToString_t __Vector_getToStringFn(Vector_t vec) {
-  return vec->toStringFn;
 }
 
 Pointer __Vector_get(Vector_t vec, int i) {
@@ -176,7 +172,6 @@ Vector_c Vector = {
     __Vector_destroy,
     __Vector_toString,
     __Vector_ensureCapacity,
-    __Vector_getToStringFn,
     __Vector_get,
     __Vector_set,
     __Vector_add,
@@ -200,4 +195,6 @@ Vector_c Vector = {
     __Vector_iterRemove
 };
 
-Pointer Vector_class[] = {implements(Vector, List, 4), NULL};
+Pointer Vector_class[] = {implements(Vector, Object, 0),
+                          implements(Vector, List, 4),
+                          NULL};

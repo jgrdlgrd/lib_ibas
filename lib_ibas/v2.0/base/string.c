@@ -57,7 +57,6 @@ String_c String = {
     __Vector_destroy,
     __String_toString,
     __Vector_ensureCapacity,
-    __Vector_getToStringFn,
     ___String_get,
     ___String_set,
     ___String_add,
@@ -85,4 +84,6 @@ String_c String = {
     __String_prependCStr
 };
 
-Pointer String_class[] = {implements(String, List, 4), NULL};
+Pointer String_class[] = {implements(String, Object, 0),
+                          implements(String, List, 4),
+                          NULL};

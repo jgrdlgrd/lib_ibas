@@ -45,16 +45,16 @@ int doTask() {
   DoubleLinkedList.insertAll(dv2, 1, dv);
   DoubleLinkedList.remove(dv2, 3);
 
-  Console.print(DoubleLinkedList.toString(dv));
+  Console.printObj(dv);
   Console.newLine();
-  Console.print(DoubleLinkedList.toString(dv2));
+  Console.printObj(dv2);
   Console.newLine();
 
   DoubleLinkedList.clear(dv);
   DoubleLinkedList.addAll(dv2, dv);
 
-  dv2->toStringFn = NULL;
-  Console.print(DoubleLinkedList.toString(dv2));
+  dv2->stringifier = NULL;
+  Console.printObj(dv2);
   Console.newLine();
 
   printf("%d", DoubleLinkedList.indexOf(dv2, 16));

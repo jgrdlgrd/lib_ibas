@@ -8,8 +8,16 @@
 
 //TODO rewrite a few methods
 
+//TODO add more colors
+declareClass(Colors, {
+  CString RESET;
+  CString RED;
+  CString GREEN;
+});
+
 declareClass(Console, {
   bool autoDestroyStrings;
+  bool autoDestroyObjects;
 
   void (*clearScreen)();
   void (*flush)();
@@ -30,12 +38,6 @@ declareClass(Console, {
 
   void (*newLine)();
   void (*print)(String_t str);
+  void (*printObj)(Object obj);
   int (*colored)(CString color, CString format, ...);
-});
-
-//TODO add more colors
-declareClass(Colors, {
-  CString RESET;
-  CString RED;
-  CString GREEN;
 });

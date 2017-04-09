@@ -15,7 +15,7 @@
   if ((LinkedList_t) obj->elemSize == 0) throw(IllegalArgumentException, "LinkedList: trying to operate on non-initialized instance!");
 }*/
 
-LinkedList_t __LinkedList_create(size_t elemSize, ToString_t toStringFn) {
+LinkedList_t __LinkedList_create(size_t elemSize, ToString_t stringifier) {
   if (!elemSize) throw(IllegalArgumentException, "LinkedList: elemSize must be greater than zero!");
 
   LinkedList_t list = Ibas.alloc(sizeof(LinkedList_s), NULL);
@@ -25,7 +25,7 @@ LinkedList_t __LinkedList_create(size_t elemSize, ToString_t toStringFn) {
   list->head = &list->head;
   list->tail = &list->tail;
   list->elemSize = elemSize;
-  list->toStringFn = toStringFn;
+  list->stringifier = stringifier;
 
   return list;
 }
@@ -38,12 +38,8 @@ void __LinkedList_destroy(LinkedList_t list) {
 }
 
 String_t __LinkedList_toString(LinkedList_t list) {
-  if (list->toStringFn) return List.toString(list);
+  if (list->stringifier) return List.toString(list, list->stringifier);
   else return String.format("[[LinkedList size=%zd elemSize=%zd head=%p tail=%p]]", list->size, list->elemSize, list->head, list->tail);
-}
-
-ToString_t __LinkedList_getToStringFn(LinkedList_t list) {
-  return list->toStringFn;
 }
 
 Pointer __LinkedList_get(LinkedList_t list, int i) {
@@ -202,7 +198,6 @@ LinkedList_c LinkedList = {
     __LinkedList_create,
     __LinkedList_destroy,
     __LinkedList_toString,
-    __LinkedList_getToStringFn,
     __LinkedList_get,
     __LinkedList_set,
     __LinkedList_add,
@@ -226,4 +221,6 @@ LinkedList_c LinkedList = {
     __LinkedList_iterRemove
 };
 
-Pointer LinkedList_class[] = {implements(LinkedList, List, 3), NULL};
+Pointer LinkedList_class[] = {implements(LinkedList, Object, 0),
+                              implements(LinkedList, List, 3),
+                              NULL};

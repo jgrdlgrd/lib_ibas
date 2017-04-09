@@ -20,9 +20,9 @@
   });
 
 
-#define genericVectorInternals(class, elemType, toStringFn) \
+#define genericVectorInternals(class, elemType, stringifier) \
   Vector_t __##class##_create(size_t capacity) { \
-    return Vector.create(sizeof(elemType), capacity, toStringFn); \
+    return Vector.create(sizeof(elemType), capacity, stringifier); \
   } \
    \
   elemType __##class##_get(Vector_t vec, int i) { \
@@ -62,14 +62,13 @@
   }
 
 
-#define genericVectorImplementation(class, elemType, toStringFn) \
-  genericVectorInternals(class, elemType, toStringFn); \
+#define genericVectorImplementation(class, elemType, stringifier) \
+  genericVectorInternals(class, elemType, stringifier); \
   class##_c class = { \
     __##class##_create, \
     __Vector_destroy, \
     __Vector_toString, \
     __Vector_ensureCapacity, \
-    __Vector_getToStringFn, \
     __##class##_get, \
     __##class##_set, \
     __##class##_add, \

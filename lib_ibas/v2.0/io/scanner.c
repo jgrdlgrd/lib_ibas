@@ -110,7 +110,6 @@ CString __Scanner_nextLine() {
   return ret;
 }
 
-//TODO rewrite
 CString __Scanner_nextText() {
   char *text, *nextL;
   text = Scanner.nextLine();

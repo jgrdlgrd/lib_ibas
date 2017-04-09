@@ -6,6 +6,12 @@
 
 #include "../fwd.h"
 
+declareInterface(Object, {
+  Object (*create)();
+  void (*destroy)(Object obj);
+  String_t (*toString)(Object obj);
+});
+
 //TODO optimize capabilities provided here
 //TODO rethink method names
 declareClass(Ibas, {
@@ -16,4 +22,6 @@ declareClass(Ibas, {
 
   Object (*getClass)(Object obj);
   Object (*getImpl)(Object obj, CString interface);
+
+  void (*destroy)(Object obj);
 });

@@ -7,8 +7,6 @@
 #include "../fwd.h"
 
 #define ListMethods(className, instanceName, elemType) \
-    ToString_t (*getToStringFn)(className##_t instanceName); \
-     \
     elemType (*get)(className##_t instanceName, int i); \
     void (*set)(className##_t instanceName, int i, elemType val); \
      \
@@ -45,5 +43,5 @@ declareInterface(List, {
 });
 
 declareClass(List, {
-  String_t (*toString)(List_t list);
+  String_t (*toString)(List_t list, ToString_t stringifier);
 });

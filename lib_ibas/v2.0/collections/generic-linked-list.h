@@ -18,9 +18,9 @@
   });
 
 
-#define genericLinkedListInternals(class, elemType, toStringFn) \
+#define genericLinkedListInternals(class, elemType, stringifier) \
   LinkedList_t __##class##_create() { \
-    return LinkedList.create(sizeof(elemType), toStringFn); \
+    return LinkedList.create(sizeof(elemType), stringifier); \
   } \
    \
   elemType __##class##_get(LinkedList_t list, int i) { \
@@ -60,13 +60,12 @@
   }
 
 
-#define genericLinkedListImplementation(class, elemType, toStringFn) \
-  genericLinkedListInternals(class, elemType, toStringFn); \
+#define genericLinkedListImplementation(class, elemType, stringifier) \
+  genericLinkedListInternals(class, elemType, stringifier); \
   class##_c class = { \
     __##class##_create, \
     __LinkedList_destroy, \
     __LinkedList_toString, \
-    __LinkedList_getToStringFn, \
     __##class##_get, \
     __##class##_set, \
     __##class##_add, \

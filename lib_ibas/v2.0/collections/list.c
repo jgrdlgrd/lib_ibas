@@ -6,14 +6,12 @@
 #include "../base/ibas.h"
 #include "../base/string.h"
 
-String_t __List_toString(List_t list) {
+String_t __List_toString(List_t list, ToString_t stringifier) {
   List_i impl = Ibas.getImpl(list, "List");
-  ToString_t toStringFn = impl->getToStringFn(list);
-
   String_t str = ToString.CStr("[");
 
   for (Object i = impl->begin(list); ; ) {
-    String.addAll(str, toStringFn(impl->iterGet(list, i)));
+    String.addAll(str, stringifier(impl->iterGet(list, i)));
 
     i = impl->iterNext(list, i);
     if (i == impl->end(list)) break;

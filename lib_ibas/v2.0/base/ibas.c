@@ -27,7 +27,6 @@ Object __Ibas_getClass(Object obj) {
 
 Object __Ibas_getImpl(Object obj, CString interface) {
   Object class = Ibas.getClass(obj);
-  if (interface == 0) return class; //"Object" should be always at the beginning
 
   CString *sPtr = class;
   Object *oPtr;
@@ -41,10 +40,16 @@ Object __Ibas_getImpl(Object obj, CString interface) {
   return NULL;
 }
 
+void __Ibas_destroy(Object obj) {
+  Object_i impl = Ibas.getImpl(obj, "Object");
+  impl->destroy(obj);
+}
+
 Ibas_c Ibas = {
     __Ibas_init,
     __Ibas_finish,
     __Ibas_alloc,
     __Ibas_getClass,
     __Ibas_getImpl,
+    __Ibas_destroy
 };

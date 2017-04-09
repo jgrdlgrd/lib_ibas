@@ -15,11 +15,11 @@ struct Vector {
   Object class;
   size_t size, elemSize, capacity;
   Pointer storage;
-  ToString_t toStringFn;
+  ToString_t stringifier;
 };
 
 declareClass(Vector, {
-  Vector_t (*create)(size_t elemSize, size_t capacity, ToString_t toStringFn);
+  Vector_t (*create)(size_t elemSize, size_t capacity, ToString_t stringifier);
   void (*destroy)(Vector_t vec);
   String_t (*toString)(Vector_t vec);
 
@@ -29,11 +29,10 @@ declareClass(Vector, {
 });
 
 //expose internals
-Vector_t __Vector_create(size_t elemSize, size_t capacity, ToString_t toStringFn);
+Vector_t __Vector_create(size_t elemSize, size_t capacity, ToString_t stringifier);
 void __Vector_destroy(Vector_t vec);
 String_t __Vector_toString(Vector_t vec);
 void __Vector_ensureCapacity(Vector_t vec, size_t capacity);
-ToString_t __Vector_getToStringFn(Vector_t vec);
 Pointer __Vector_get(Vector_t vec, int i);
 void __Vector_set(Vector_t vec, int i, Pointer val);
 void __Vector_insertSlice(Vector_t vec, int i, Pointer slice, size_t size);

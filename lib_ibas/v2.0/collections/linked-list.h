@@ -11,11 +11,11 @@ struct LinkedList {
   Object class;
   size_t elemSize, size;
   Pointer head, tail;
-  ToString_t toStringFn;
+  ToString_t stringifier;
 };
 
 declareClass(LinkedList, {
-  LinkedList_t (*create)(size_t elemSize, ToString_t toStringFn);
+  LinkedList_t (*create)(size_t elemSize, ToString_t stringifier);
   void (*destroy)(LinkedList_t list);
   String_t (*toString)(LinkedList_t list);
 
@@ -23,10 +23,9 @@ declareClass(LinkedList, {
 });
 
 //expose internals
-LinkedList_t __LinkedList_create(size_t elemSize, ToString_t toStringFn);
+LinkedList_t __LinkedList_create(size_t elemSize, ToString_t stringifier);
 void __LinkedList_destroy(LinkedList_t list);
 String_t __LinkedList_toString(LinkedList_t list);
-ToString_t __LinkedList_getToStringFn(LinkedList_t list);
 Pointer __LinkedList_get(LinkedList_t list, int i);
 void __LinkedList_set(LinkedList_t list, int i, Pointer val);
 void __LinkedList_add(LinkedList_t list, Pointer val);
