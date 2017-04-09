@@ -3,5 +3,6 @@
 //
 
 #include "int-linked-list.h"
+#include "../../base/string.h"
 
 genericLinkedListImplementation(IntLinkedList, int, (ToString_t) ToString.IntPtr);

@@ -3,5 +3,6 @@
 //
 
 #include "object-linked-list.h"
+#include "../../base/string.h"
 
 genericLinkedListImplementation(ObjectLinkedList, Object, ToString.Object);

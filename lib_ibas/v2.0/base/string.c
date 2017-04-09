@@ -3,6 +3,7 @@
 //
 
 #include "string.h"
+#include "../collections/generic-vector.h"
 
 String_t __String_toString(String_t str) {
   return str;

@@ -3,5 +3,6 @@
 //
 
 #include "double-vector.h"
+#include "../../base/string.h"
 
 genericVectorImplementation(DoubleVector, double, (ToString_t) ToString.DoublePtr);

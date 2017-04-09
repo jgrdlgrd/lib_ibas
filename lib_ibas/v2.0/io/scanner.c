@@ -2,6 +2,8 @@
 // Created by Павел on 21.12.2016.
 //
 
+#include <errno.h>
+
 #include "scanner.h"
 
 CString __Scanner_nextToken_(bool skipPrefix) {

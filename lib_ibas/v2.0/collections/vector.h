@@ -6,31 +6,22 @@
 
 #pragma once
 
-#include "../base/base.h"
+#include "../fwd.h"
+#include "list.h"
 
 #define VECTOR_GROWTH_FACTOR 1.5
 
-declareType(Vector, {
+struct Vector {
   Object class;
-  size_t size;
-  size_t elemSize;
-  size_t capacity;
+  size_t size, elemSize, capacity;
   Object storage;
-  //TODO find a way to solve this problem
-  Object (*toStringFn)(Object);
-});
-
-/*
- * we do not use String_t and ToString_t below to avoid circular dependency
- * it's ok since Vector_t and String_t are synonyms
- */
-typedef Vector_t (*__Vector_ToString_t)(Object);
-#include "list.h"
+  ToString_t toStringFn;
+};
 
 declareClass(Vector, {
-  Vector_t (*create)(size_t elemSize, size_t capacity, __Vector_ToString_t toStringFn);
+  Vector_t (*create)(size_t elemSize, size_t capacity, ToString_t toStringFn);
   void (*destroy)(Vector_t vec);
-  Vector_t (*toString)(Vector_t vec);
+  String_t (*toString)(Vector_t vec);
 
   void (*ensureCapacity)(Vector_t vec, size_t capacity);
 
@@ -38,11 +29,11 @@ declareClass(Vector, {
 });
 
 //expose internals
-Vector_t __Vector_create(size_t elemSize, size_t capacity, __Vector_ToString_t toStringFn);
+Vector_t __Vector_create(size_t elemSize, size_t capacity, ToString_t toStringFn);
 void __Vector_destroy(Vector_t vec);
-Vector_t __Vector_toString(Vector_t vec);
+String_t __Vector_toString(Vector_t vec);
 void __Vector_ensureCapacity(Vector_t vec, size_t capacity);
-__Vector_ToString_t __Vector_getToStringFn(Vector_t vec);
+ToString_t __Vector_getToStringFn(Vector_t vec);
 Object __Vector_get(Vector_t vec, int i);
 void __Vector_set(Vector_t vec, int i, Object val);
 void __Vector_insertSlice(Vector_t vec, int i, void *slice, size_t size);

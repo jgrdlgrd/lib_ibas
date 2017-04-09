@@ -3,5 +3,6 @@
 //
 
 #include "double-linked-list.h"
+#include "../../base/string.h"
 
 genericLinkedListImplementation(DoubleLinkedList, double, (ToString_t) ToString.DoublePtr);

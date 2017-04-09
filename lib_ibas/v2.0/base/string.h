@@ -4,15 +4,10 @@
 
 #pragma once
 
-#include "base.h"
-#include "../collections/list.h"
-#include "../collections/vector.h"
-#include "../collections/generic-vector.h"
-
-typedef Vector_s String_s;
-typedef String_s* String_t;
-
+#include "../fwd.h"
 #include "to-string.h"
+#include "../collections/list.h"
+#include "../collections/vector.h" //included here to have fields of String_s defined
 
 declareClass(String, {
   String_t (*create)(size_t capacity);

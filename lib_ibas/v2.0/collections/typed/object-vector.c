@@ -3,5 +3,6 @@
 //
 
 #include "object-vector.h"
+#include "../../base/string.h"
 
 genericVectorImplementation(ObjectVector, Object, ToString.Object);

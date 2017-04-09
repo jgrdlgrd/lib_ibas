@@ -4,12 +4,7 @@
 
 #pragma once
 
-#include <locale.h>
-#include <errno.h>
-
-#include "../base/base.h"
-#include "../base/string.h"
-#include "scanner.h"
+#include "../fwd.h"
 
 //TODO rewrite a few methods
 

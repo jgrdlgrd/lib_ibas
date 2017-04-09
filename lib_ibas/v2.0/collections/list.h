@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "../base/base.h"
+#include "../fwd.h"
 
 #define ListMethods(className, instanceName, elemType) \
-    __Vector_ToString_t (*getToStringFn)(className##_t instanceName); \
+    ToString_t (*getToStringFn)(className##_t instanceName); \
      \
     elemType (*get)(className##_t instanceName, int i); \
     void (*set)(className##_t instanceName, int i, elemType val); \
@@ -39,12 +39,11 @@
      \
     void (*iterRemove)(className##_t instanceName, Object iter);
 
-#include "vector.h"
 
 declareInterface(List, {
   ListMethods(List, list, Object);
 });
 
 declareClass(List, {
-  Vector_t (*toString)(List_t list);
+  String_t (*toString)(List_t list);
 });

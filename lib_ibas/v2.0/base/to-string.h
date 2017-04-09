@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "string.h"
-
-typedef String_t (*ToString_t)(Object);
+#include "../fwd.h"
 
 declareClass(ToString, {
   String_t (*Object)(Object obj);

@@ -3,6 +3,8 @@
 //
 
 #include "linked-list.h"
+#include "../base/ibas.h"
+#include "../base/string.h"
 
 #define __PTR_SIZE sizeof(void *)
 

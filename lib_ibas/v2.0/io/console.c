@@ -2,7 +2,12 @@
 // Created by Павел on 17.12.2016.
 //
 
+#include <locale.h>
+#include <errno.h>
+
 #include "console.h"
+#include "scanner.h"
+#include "../base/string.h"
 
 Colors_c Colors = {
     "\033[0m",

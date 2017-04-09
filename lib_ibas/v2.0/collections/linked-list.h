@@ -4,18 +4,15 @@
 
 #pragma once
 
-#include "../base/base.h"
-#include "../base/string.h"
+#include "../fwd.h"
 #include "list.h"
 
-declareType(LinkedList, {
+struct LinkedList {
   Object class;
-  size_t elemSize;
-  size_t size;
-  void *head;
-  void *tail;
+  size_t elemSize, size;
+  void *head, *tail;
   ToString_t toStringFn;
-});
+};
 
 declareClass(LinkedList, {
   LinkedList_t (*create)(size_t elemSize, ToString_t toStringFn);

@@ -8,6 +8,6 @@
 //TODO document everything :D
 //TODO test everything :D
 
-#include "base/base.h"
+#include "base/ibas.h"
 #include "base/string.h"
 #include "io/console.h"

@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include <errno.h>
-#include "../base/base.h"
+#include "../fwd.h"
 
 #define SCANNER_BUFFER_LENGTH 256;
 

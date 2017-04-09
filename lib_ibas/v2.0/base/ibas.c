@@ -2,7 +2,7 @@
 // Created by Павел on 21.03.2017.
 //
 
-#include "base.h"
+#include "ibas.h"
 #include "../io/scanner.h"
 
 void __Ibas_init() {

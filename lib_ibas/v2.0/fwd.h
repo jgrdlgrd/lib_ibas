@@ -1,5 +1,5 @@
 //
-// Created by Павел on 19.12.2016.
+// Created by Павел on 09.04.2017.
 //
 
 #pragma once
@@ -13,7 +13,7 @@
 #include <limits.h>
 
 #include "e4c/e4c.h"
-#include "macros.h"
+#include "base/macros.h"
 
 typedef char* CString;
 typedef void* Object;
@@ -25,7 +25,7 @@ typedef struct {
 } Pair;
 
 typedef struct {
-    int first, second;
+  int first, second;
 } IntPair;
 
 typedef struct {
@@ -36,14 +36,11 @@ typedef struct {
   Object first, second, third;
 } Triple;
 
-//TODO optimize capabilities provided here
-//TODO rethink method names
-declareClass(Ibas, {
-  void (*init)();
-  void (*finish)();
+typedef struct Vector String_s;
+typedef String_s* String_t;
 
-  Object (*alloc)(size_t size, CString message);
+typedef String_t (*ToString_t)(Object);
 
-  Object (*getClass)(Object obj);
-  Object (*getImpl)(Object obj, CString interface);
-});
+declareType(Vector);
+
+declareType(LinkedList);

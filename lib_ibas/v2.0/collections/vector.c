@@ -3,8 +3,7 @@
 //
 
 #include "vector.h"
-
-//we couldn't include it in the header because of a circular dependency
+#include "../base/ibas.h"
 #include "../base/string.h"
 
 Vector_t __Vector_create(size_t elemSize, size_t capacity, ToString_t toStringFn) {

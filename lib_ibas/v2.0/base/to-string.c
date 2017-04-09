@@ -3,6 +3,8 @@
 //
 
 #include "to-string.h"
+#include "string.h"
+#include "../collections/vector.h"
 
 //TODO implement
 String_t __ToString_Object(Object obj) {

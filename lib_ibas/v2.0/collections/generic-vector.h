@@ -5,7 +5,6 @@
 #pragma once
 
 #include "vector.h"
-#include "../base/string.h"
 
 #define genericVectorDeclaration(class, elemType) \
   typedef Vector_t class##_t; \

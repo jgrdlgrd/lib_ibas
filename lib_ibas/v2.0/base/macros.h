@@ -4,8 +4,8 @@
 
 #pragma once
 
-#define declareType(name, fields) \
-    typedef struct fields name##_s; \
+#define declareType(name) \
+    typedef struct name name##_s; \
     typedef name##_s* name##_t;
 
 #define declareInterface(name, members) \
