@@ -5,6 +5,12 @@
 #include "string.h"
 #include "../collections/generic-vector.h"
 
+String_t __String_create(size_t capacity) {
+  Vector_t vec = Vector.create(sizeof(char), capacity, NULL);
+  vec->class = &String_class;
+  return vec;
+}
+
 String_t __String_toString(String_t str) {
   return str;
 }
@@ -47,7 +53,7 @@ void __String_prependCStr(String_t str, CString cstr) {
 genericVectorInternals(_String, char, NULL);
 
 String_c String = {
-    ___String_create,
+    __String_create,
     __Vector_destroy,
     __String_toString,
     __Vector_ensureCapacity,
@@ -78,3 +84,5 @@ String_c String = {
     __String_appendCStr,
     __String_prependCStr
 };
+
+Pointer String_class[] = {implements(String, List, 4), NULL};

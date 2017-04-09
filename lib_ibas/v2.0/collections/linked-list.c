@@ -6,7 +6,7 @@
 #include "../base/ibas.h"
 #include "../base/string.h"
 
-#define __PTR_SIZE sizeof(void *)
+#define __PTR_SIZE sizeof(Pointer)
 
 //TODO only a madman would implement dynamic types in C
 /*void __LinkedList_instanceCheck(LinkedList_t obj, bool typeOnly) {
@@ -20,7 +20,7 @@ LinkedList_t __LinkedList_create(size_t elemSize, ToString_t toStringFn) {
 
   LinkedList_t list = Ibas.alloc(sizeof(LinkedList_s), NULL);
 
-  list->class = &LinkedList;
+  list->class = &LinkedList_class;
   list->size = 0;
   list->head = &list->head;
   list->tail = &list->tail;
@@ -46,36 +46,36 @@ ToString_t __LinkedList_getToStringFn(LinkedList_t list) {
   return list->toStringFn;
 }
 
-Object __LinkedList_get(LinkedList_t list, int i) {
+Pointer __LinkedList_get(LinkedList_t list, int i) {
   if (i < 0 || i >= list->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
 
   return LinkedList.iterGet(list, LinkedList.iter(list, i));
 }
 
-void __LinkedList_set(LinkedList_t list, int i, Object val) {
+void __LinkedList_set(LinkedList_t list, int i, Pointer val) {
   if (i < 0 || i >= list->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
 
   LinkedList.iterSet(list, LinkedList.iter(list, i), val);
 }
 
-void __LinkedList_insert(LinkedList_t list, int i, Object val) {
+void __LinkedList_add(LinkedList_t list, Pointer val) {
+  LinkedList.insert(list, (int) list->size, val);
+}
+
+void __LinkedList_insert(LinkedList_t list, int i, Pointer val) {
   if (i < 0 || i > list->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
 
   LinkedList.iterInsert(list, LinkedList.iter(list, i), val);
 }
 
-void __LinkedList_add(LinkedList_t list, Object val) {
-  LinkedList.insert(list, (int) list->size, val);
+void __LinkedList_addAll(LinkedList_t list1, LinkedList_t list2) {
+  LinkedList.insertAll(list1, (int) list1->size, list2);
 }
 
 void __LinkedList_insertAll(LinkedList_t list1, int i, LinkedList_t list2) {
   if (i < 0 || i > list1->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
 
   LinkedList.iterInsertAll(list1, LinkedList.iter(list1, i), list2);
-}
-
-void __LinkedList_addAll(LinkedList_t list1, LinkedList_t list2) {
-  LinkedList.insertAll(list1, (int) list1->size, list2);
 }
 
 void __LinkedList_remove(LinkedList_t list, int i) {
@@ -85,7 +85,7 @@ void __LinkedList_remove(LinkedList_t list, int i) {
 }
 
 void __LinkedList_clear(LinkedList_t list) {
-  void **nextPtr = list->head, *tmp;
+  Pointer *nextPtr = list->head, tmp;
   while (nextPtr != &list->head) {
     tmp = nextPtr;
     nextPtr = *nextPtr;
@@ -97,7 +97,7 @@ void __LinkedList_clear(LinkedList_t list) {
   list->tail = &list->tail;
 }
 
-int __LinkedList_indexOf(LinkedList_t list, Object val) {
+int __LinkedList_indexOf(LinkedList_t list, Pointer val) {
   int i = 0;
   Object it = LinkedList.begin(list), end = LinkedList.end(list);
 
@@ -121,7 +121,7 @@ Object __LinkedList_end(LinkedList_t list) {
   return &list->head;
 }
 
-Object __LinkedList_find(LinkedList_t list, Object val) {
+Object __LinkedList_find(LinkedList_t list, Pointer val) {
   Object it = LinkedList.begin(list);
   for (; it != LinkedList.end(list); it = LinkedList.iterNext(list, it)) {
     if (!memcmp(LinkedList.iterGet(list, it), val, list->elemSize)) break;
@@ -139,7 +139,7 @@ Object __LinkedList_iterPrev(LinkedList_t list, Object iter) {
 }
 
 Object __LinkedList_iterJump(LinkedList_t list, Object iter, int length) {
-  void **it = iter;
+  Pointer *it = iter;
   bool reverse = length < 0;
   if (reverse) {
     length = -length;
@@ -155,18 +155,18 @@ Object __LinkedList_iterJump(LinkedList_t list, Object iter, int length) {
   return it;
 }
 
-Object __LinkedList_iterGet(LinkedList_t list, Object iter) {
+Pointer __LinkedList_iterGet(LinkedList_t list, Object iter) {
   return iter + 2 * __PTR_SIZE;
 }
 
-void __LinkedList_iterSet(LinkedList_t list, Object iter, Object val) {
+void __LinkedList_iterSet(LinkedList_t list, Object iter, Pointer val) {
   memcpy(iter + 2 * __PTR_SIZE, val, list->elemSize);
 }
 
-void __LinkedList_iterInsert(LinkedList_t list, Object iter, Object val) {
-  void **next = iter;
-  void **prev = *(next + 1) - __PTR_SIZE;
-  void **new = Ibas.alloc(2 * __PTR_SIZE + list->elemSize, NULL);
+void __LinkedList_iterInsert(LinkedList_t list, Object iter, Pointer val) {
+  Pointer *next = iter;
+  Pointer *prev = *(next + 1) - __PTR_SIZE;
+  Pointer *new = Ibas.alloc(2 * __PTR_SIZE + list->elemSize, NULL);
 
   *prev = new;
   *new = next;
@@ -187,9 +187,9 @@ void __LinkedList_iterInsertAll(LinkedList_t list1, Object iter, LinkedList_t li
 }
 
 void __LinkedList_iterRemove(LinkedList_t list, Object iter) {
-  void **deleted = iter;
-  void **prev = *(deleted + 1) - __PTR_SIZE;;
-  void **next = *deleted;
+  Pointer *deleted = iter;
+  Pointer *prev = *(deleted + 1) - __PTR_SIZE;;
+  Pointer *next = *deleted;
 
   *prev = next;
   *(next + 1) = prev + 1;
@@ -226,4 +226,4 @@ LinkedList_c LinkedList = {
     __LinkedList_iterRemove
 };
 
-Object LinkedList_class[] = {implements(LinkedList, List, 3), NULL};
+Pointer LinkedList_class[] = {implements(LinkedList, List, 3), NULL};

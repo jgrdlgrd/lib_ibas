@@ -15,8 +15,8 @@
 #include "e4c/e4c.h"
 #include "base/macros.h"
 
-typedef char* CString;
-typedef void* Object;
+typedef char *CString;
+typedef void *Object, *Pointer;
 
 typedef int (*Validator)(Object, Object);
 

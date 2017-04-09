@@ -45,7 +45,7 @@ CString __Scanner_nextToken() {
   return __Scanner_nextToken_(true);
 }
 
-int __Scanner_next(CString format, void *dest) {
+int __Scanner_next(CString format, Pointer dest) {
   CString token = Scanner.nextToken();
 
   if (!token) {

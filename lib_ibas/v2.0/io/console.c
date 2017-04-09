@@ -31,7 +31,7 @@ void __Console_newLine() {
 
 void __Console_clearScreen() {
   #ifdef __CYGWIN__
-     system("clear");
+    system("clear");
   #else
     system("cls");
   #endif
@@ -58,7 +58,7 @@ CString __Console_setRusLocale() {
 #endif
 }
 
-int __Console_inputToken(CString format, Object dest, CString prompt, CString errorMessage) {
+int __Console_inputToken(CString format, Pointer dest, CString prompt, CString errorMessage) {
   FILE *oldStream = Scanner.stream;
   Scanner.stream = stdin;
 
@@ -93,7 +93,7 @@ double __Console_inputDouble(CString prompt, CString errorMessage) {
   return ret;
 }
 
-int __Console_inputAndValidateToken(CString format, Object dest, CString prompt, CString errorMessage, Validator validator, Object context) {
+int __Console_inputAndValidateToken(CString format, Pointer dest, CString prompt, CString errorMessage, Validator validator, Object context) {
   while (true) {
     int err = Console.inputToken(format, dest, prompt, errorMessage);
     //prompt = NULL;

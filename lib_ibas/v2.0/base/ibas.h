@@ -12,7 +12,7 @@ declareClass(Ibas, {
   void (*init)();
   void (*finish)();
 
-  Object (*alloc)(size_t size, CString message);
+  Pointer (*alloc)(size_t size, CString message);
 
   Object (*getClass)(Object obj);
   Object (*getImpl)(Object obj, CString interface);

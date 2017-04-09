@@ -20,8 +20,8 @@ declareClass(Console, {
   int (*showMenu)(int count, CString labels[count]);
   bool (*prompt)(CString question);
 
-  int (*inputToken)(CString format, Object dest, CString prompt, CString errorMessage);
-  int (*inputAndValidateToken)(CString format, Object dest, CString prompt, CString errorMessage, Validator validator, Object context);
+  int (*inputToken)(CString format, Pointer dest, CString prompt, CString errorMessage);
+  int (*inputAndValidateToken)(CString format, Pointer dest, CString prompt, CString errorMessage, Validator validator, Object context);
 
   int (*inputInt)(CString prompt, CString errorMessage);
   double (*inputDouble)(CString prompt, CString errorMessage);
@@ -30,7 +30,7 @@ declareClass(Console, {
 
   void (*newLine)();
   void (*print)(String_t str);
-  int (*colored)(CString colour, CString format, ...);
+  int (*colored)(CString color, CString format, ...);
 });
 
 //TODO add more colors

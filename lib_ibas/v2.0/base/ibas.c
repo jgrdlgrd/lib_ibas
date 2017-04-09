@@ -14,9 +14,9 @@ void __Ibas_finish() {
   e4c_context_end();
 }
 
-Object __Ibas_alloc(size_t size, CString message) {
+Pointer __Ibas_alloc(size_t size, CString message) {
   if (!message) message = "Could not allocate memory";
-  Object ptr = malloc(size);
+  Pointer ptr = malloc(size);
   if (!ptr) throw(NotEnoughMemoryException, message);
   return ptr;
 }

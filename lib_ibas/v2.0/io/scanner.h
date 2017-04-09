@@ -14,7 +14,7 @@ declareClass(Scanner, {
   FILE *stream;
   CString delimiters;
 
-  int (*next)(CString, Object);
+  int (*next)(CString format, Pointer dest);
   CString (*nextToken)();
 
   int (*nextInt)();

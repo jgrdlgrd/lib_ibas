@@ -15,7 +15,7 @@
 #define declareClass(name, members) \
     typedef struct members name##_c; \
     extern name##_c name; \
-    extern Object name##_class[];
+    extern Pointer name##_class[];
 
 #define implements(className, interfaceName, offset) #interfaceName, (void *) &className + (offset) * sizeof(void *)
 

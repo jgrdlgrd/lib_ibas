@@ -41,7 +41,7 @@
 
 
 declareInterface(List, {
-  ListMethods(List, list, Object);
+  ListMethods(List, list, Pointer);
 });
 
 declareClass(List, {
