@@ -3,175 +3,210 @@
 //
 
 #include "vector.h"
-#include "../base/ibas.h"
-#include "../base/string.h"
+#include "../base/base.h"
 
-Vector_t __Vector_create(size_t elemSize, size_t capacity, ToString_t stringifier) {
-  if (!elemSize) throw(IllegalArgumentException, "Vector: elemSize must be greater than zero!");
-
-  Vector_t vec = Ibas.alloc(sizeof(Vector_s), NULL);
-
-  vec->class = &Vector_class;
-  vec->size = vec->capacity = 0;
-  vec->storage = NULL;
-  vec->elemSize = elemSize;
-  vec->stringifier = stringifier;
-
-  Vector.ensureCapacity(vec, capacity);
-
+Vector_t __Vector_create(size_t capacity) {
+  Vector_t vec = Vector.createPrimitive(capacity, sizeof(Pointer_t), Object.class);
+  vec->primitive = false;
   return vec;
 }
 
-void __Vector_destroy(Vector_t vec) {
-  if (!vec) return;
+Vector_t __Vector_createPrimitive(size_t capacity, size_t elemSize, Class_t elemClass) {
+  if (!elemSize) throw(IllegalArgumentException, "Vector: elemSize must be greater than zero!");
 
-  Vector.clear(vec);
-  free(vec);
+  Vector_t self = Ibas.alloc(sizeof(Vector_s), NULL);
+
+  self->class = Vector.class;
+  self->size = self->capacity = 0;
+  self->storage = NULL;
+  self->elemSize = elemSize;
+  self->elemClass = elemClass;
+  self->primitive = true;
+
+  Vector.ensureCapacity(self, capacity);
+
+  return self;
 }
 
-String_t __Vector_toString(Vector_t vec) {
-  if (vec->stringifier) return List.toString(vec, vec->stringifier);
-  else return String.format("[[Vector size=%zd elemSize=%zd storage=%p]]", vec->size, vec->elemSize, vec->storage);
+void __Vector_destroy(Vector_t self) {
+  if (!self) return;
+
+  Vector.clear(self);
+  free(self);
 }
 
-void __Vector_ensureCapacity(Vector_t vec, size_t capacity) {
-  if (capacity <= vec->capacity) return;
+String_t __Vector_toString(Vector_t self) {
+  if (!self->elemClass)
+    return String.format("[[Vector size=%zd elemSize=%zd storage=%p]]", self->size, self->elemSize, self->storage);
 
-  Pointer storage = realloc(vec->storage, capacity * vec->elemSize);
-  if (!storage) throw(NotEnoughMemoryException, "Could not increase the vector's capacity");
-
-  vec->storage = storage;
-  vec->capacity = capacity;
+  return List.toString(self, Vector.toList(self), self->elemClass->toString);
 }
 
-Pointer __Vector_get(Vector_t vec, int i) {
-  if (i < 0 || i >= vec->size) throw(IllegalArgumentException, "Vector: index out of bounds!");
-
-  return Vector.iterGet(vec, Vector.iter(vec, i));
+int __Vector_compare(Vector_t vec1, Vector_t vec2) {
+  throw(NotImplementedException, "Vector.compare() is not implemented!");
 }
 
-void __Vector_set(Vector_t vec, int i, Pointer val) {
-  if (i < 0 || i >= vec->size) throw(IllegalArgumentException, "Vector: index out of bounds!");
-
-  Vector.iterSet(vec, Vector.iter(vec, i), val);
+List_i __Vector_toList(Vector_t self) {
+  return (List_i) &Vector.toList;
 }
 
-void __Vector_insertSlice(Vector_t vec, int i, Pointer slice, size_t size) {
-  if (i < 0 || i > vec->size) throw(IllegalArgumentException, "Vector: index out of bounds!");
+Pointer_t __Vector_get(Vector_t self, int i) {
+  if (i < 0 || i >= self->size) throw(IllegalArgumentException, "Vector: index out of bounds!");
 
-  size_t cap = vec->capacity;
-  while (cap < vec->size + size) {
-    cap = max((size_t)(cap * VECTOR_GROWTH_FACTOR), cap + 1);
+  return Vector.iterGet(self, Vector.iter(self, i));
+}
+
+void __Vector_set(Vector_t self, int i, Pointer_t val) {
+  if (i < 0 || i >= self->size) throw(IllegalArgumentException, "Vector: index out of bounds!");
+
+  Vector.iterSet(self, Vector.iter(self, i), val);
+}
+
+void __Vector_insertSlice(Vector_t self, int i, Pointer_t slice, size_t size) {
+  if (i < 0 || i > self->size) throw(IllegalArgumentException, "Vector: index out of bounds!");
+
+  size_t cap = self->capacity;
+  while (cap < self->size + size) {
+    cap = $max((size_t)(cap * VECTOR_GROWTH_FACTOR), cap + 1);
   }
-  Vector.ensureCapacity(vec, cap);
+  Vector.ensureCapacity(self, cap);
 
-  Pointer ptr = vec->storage + i * vec->elemSize;
-  memmove(ptr + size * vec->elemSize, ptr, vec->elemSize * (vec->size - i));
-  memcpy(ptr, slice, size * vec->elemSize);
-  vec->size += size;
+  Pointer_t ptr = self->storage + i * self->elemSize;
+  memmove(ptr + size * self->elemSize, ptr, self->elemSize * (self->size - i));
+  memcpy(ptr, slice, size * self->elemSize);
+  self->size += size;
 }
 
-void __Vector_add(Vector_t vec, Pointer val) {
-  Vector.insert(vec, (int) vec->size, val);
+void __Vector_add(Vector_t self, Pointer_t val) {
+  Vector.insert(self, (int) self->size, val);
 }
 
-void __Vector_insert(Vector_t vec, int i, Pointer val) {
-  __Vector_insertSlice(vec, i, val, 1);
+void __Vector_insert(Vector_t self, int i, Pointer_t val) {
+  __Vector_insertSlice(self, i, self->primitive? val : &val, 1);
 }
 
-void __Vector_addAll(Vector_t vec1, Vector_t vec2) {
-  Vector.insertAll(vec1, (int) vec1->size, vec2);
+void __Vector_addAll(Vector_t self, Vector_t vec) {
+  Vector.insertAll(self, (int) self->size, vec);
 }
 
-void __Vector_insertAll(Vector_t vec1, int i, Vector_t vec2) {
-  if (vec1->elemSize != vec2->elemSize) throw(IllegalArgumentException, "Vector: element sizes don't match!");
+void __Vector_insertAll(Vector_t self, int i, Vector_t vec) {
+  if (self->elemSize != vec->elemSize) throw(IllegalArgumentException, "Vector: element sizes don't match!");
 
-  __Vector_insertSlice(vec1, i, vec2->storage, vec2->size);
+  __Vector_insertSlice(self, i, vec->storage, vec->size);
 }
 
-void __Vector_remove(Vector_t vec, int i) {
-  Pointer ptr = Vector.get(vec, i);
-  memmove(ptr, ptr + vec->elemSize, vec->elemSize * (vec->size - i - 1));
-  vec->size--;
+void __Vector_remove(Vector_t self, int i) {
+  Pointer_t ptr = Vector.get(self, i);
+  memmove(ptr, ptr + self->elemSize, self->elemSize * (self->size - i - 1));
+  self->size--;
 }
 
-void __Vector_clear(Vector_t vec) {
-  free(vec->storage);
+void __Vector_clear(Vector_t self) {
+  free(self->storage);
 
-  vec->size = vec->capacity = 0;
-  vec->storage = NULL;
+  self->size = self->capacity = 0;
+  self->storage = NULL;
 }
 
-int __Vector_iterToIndex(Vector_t vec, Object iter) {
-  return (int) ((iter - vec->storage) / vec->elemSize);
+size_t __Vector_size(Vector_t self) {
+  return self->size;
 }
 
-int __Vector_indexOf(Vector_t vec, Pointer val) {
-  Object iter = Vector.find(vec, val);
-
-  if(iter == Vector.end(vec)) return -1;
-  else return __Vector_iterToIndex(vec, iter);
+int __Vector_iterToIndex(Vector_t self, Object_t iter) {
+  return (int) ((iter - self->storage) / self->elemSize);
 }
 
-Object __Vector_iter(Vector_t vec, int i) {
-  if (i < 0 || i >= vec->size) return Vector.end(vec);
-  else return vec->storage + i * vec->elemSize;
+int __Vector_indexOf(Vector_t self, Pointer_t val) {
+  Object_t iter = Vector.find(self, val);
+
+  if(iter == Vector.end(self)) return -1;
+  else return __Vector_iterToIndex(self, iter);
 }
 
-Object __Vector_begin(Vector_t vec) {
-  return vec->storage;
+Object_t __Vector_iter(Vector_t self, int i) {
+  if (i < 0 || i >= self->size) return Vector.end(self);
+  else return self->storage + i * self->elemSize;
 }
 
-Object __Vector_end(Vector_t vec) {
-  return vec->storage + vec->size * vec->elemSize;
+Object_t __Vector_begin(Vector_t self) {
+  return self->storage;
 }
 
-Object __Vector_find(Vector_t vec, Pointer val) {
-  Object it = Vector.begin(vec);
-  for (; it != Vector.end(vec); it = Vector.iterNext(vec, it)) {
-    if (!memcmp(Vector.iterGet(vec, it), val, vec->elemSize)) break;
+Object_t __Vector_end(Vector_t self) {
+  return self->storage + self->size * self->elemSize;
+}
+
+Object_t __Vector_find(Vector_t self, Pointer_t val) {
+  if (!self->elemClass)
+    throw(UnsupportedOperationException, "Vector: no comparator defined!");
+
+  Object_t it = Vector.begin(self);
+  for (; it != Vector.end(self); it = Vector.iterNext(self, it)) {
+    if (!self->elemClass->compare(Vector.iterGet(self, it), val)) break;
   }
 
   return it;
 }
 
-Object __Vector_iterNext(Vector_t vec, Object iter) {
-  return Vector.iterJump(vec, iter, 1);
+Object_t __Vector_iterNext(Vector_t self, Object_t iter) {
+  return Vector.iterJump(self, iter, 1);
 }
 
-Object __Vector_iterPrev(Vector_t vec, Object iter) {
-  return Vector.iterJump(vec, iter, -1);
+Object_t __Vector_iterPrev(Vector_t self, Object_t iter) {
+  return Vector.iterJump(self, iter, -1);
 }
 
-Object __Vector_iterJump(Vector_t vec, Object iter, int length) {
-  return Vector.iter(vec, __Vector_iterToIndex(vec, iter) + length);
+Object_t __Vector_iterJump(Vector_t self, Object_t iter, int length) {
+  return Vector.iter(self, __Vector_iterToIndex(self, iter) + length);
 }
 
-Pointer __Vector_iterGet(Vector_t vec, Object iter) {
+Pointer_t __Vector_iterGet(Vector_t self, Object_t iter) {
   return iter;
 }
 
-void __Vector_iterSet(Vector_t vec, Object iter, Pointer val) {
-  memcpy(iter, val, vec->elemSize);
+void __Vector_iterSet(Vector_t self, Object_t iter, Pointer_t val) {
+  memcpy(iter, self->primitive? val : &val, self->elemSize);
 }
 
-void __Vector_iterInsert(Vector_t vec, Object iter, Pointer val) {
-  Vector.insert(vec, __Vector_iterToIndex(vec, iter), val);
+void __Vector_iterInsert(Vector_t self, Object_t iter, Pointer_t val) {
+  Vector.insert(self, __Vector_iterToIndex(self, iter), val);
 }
 
-void __Vector_iterInsertAll(Vector_t vec1, Object iter, Vector_t vec2) {
-  Vector.insertAll(vec1, __Vector_iterToIndex(vec1, iter), vec2);
+void __Vector_iterInsertAll(Vector_t self, Object_t iter, Vector_t vec) {
+  Vector.insertAll(self, __Vector_iterToIndex(self, iter), vec);
 }
 
-void __Vector_iterRemove(Vector_t vec, Object iter) {
-  Vector.remove(vec, __Vector_iterToIndex(vec, iter));
+void __Vector_iterRemove(Vector_t self, Object_t iter) {
+  Vector.remove(self, __Vector_iterToIndex(self, iter));
 }
 
-Vector_c Vector = {
+void __Vector_ensureCapacity(Vector_t self, size_t capacity) {
+  if (capacity <= self->capacity) return;
+
+  Pointer_t storage = realloc(self->storage, capacity * self->elemSize);
+  if (!storage) throw(NotEnoughMemoryException, "Could not increase the vector's capacity");
+
+  self->storage = storage;
+  self->capacity = capacity;
+}
+
+void __Vector_sort(Vector_t self, Compare_t comparator) {
+  if (!comparator && !self->elemClass)
+    throw(UnsupportedOperationException, "Vector: no comparator defined!");
+
+  if (!comparator) comparator = self->elemClass->compare;
+
+  qsort(self->storage, self->size, self->elemSize, (__compar_fn_t) comparator);
+}
+
+$defineNamespace(Vector) {
+    (Class_t) &Vector.destroy,
     __Vector_create,
+    __Vector_createPrimitive,
     __Vector_destroy,
     __Vector_toString,
-    __Vector_ensureCapacity,
+    __Vector_compare,
+    __Vector_toList,
     __Vector_get,
     __Vector_set,
     __Vector_add,
@@ -180,6 +215,7 @@ Vector_c Vector = {
     __Vector_insertAll,
     __Vector_remove,
     __Vector_clear,
+    __Vector_size,
     __Vector_indexOf,
     __Vector_iter,
     __Vector_begin,
@@ -192,9 +228,7 @@ Vector_c Vector = {
     __Vector_iterSet,
     __Vector_iterInsert,
     __Vector_iterInsertAll,
-    __Vector_iterRemove
+    __Vector_iterRemove,
+    __Vector_ensureCapacity,
+    __Vector_sort
 };
-
-Pointer Vector_class[] = {implements(Vector, Object, 0),
-                          implements(Vector, List, 4),
-                          NULL};

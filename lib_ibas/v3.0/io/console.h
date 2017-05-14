@@ -2,22 +2,43 @@
 // Created by Павел on 17.12.2016.
 //
 
-#ifndef LABS_IO_H
-#define LABS_IO_H
+#pragma once
 
-#include "lib_ibas/v3.0/base.h"
-#include "primitive.h"
+#include "../fwd.h"
 
-void newLine();
+//TODO rewrite a few methods
 
-int showMenu(String prompt, const int count, String labels[count], BoundRunnable actions[count]);
+//TODO add more colors
+$declareClass(Colors, {
+  CString RESET;
+  CString RED;
+  CString GREEN;
+});
 
-void clearScreen();
+$declareClass(Console, {
+  Scanner_t scanner;
+  bool autoDestroyStrings;
+  bool autoDestroyObjects;
 
-void flush();
+  void (*clearScreen)();
+  void (*flush)();
+  void (*pause)();
+  CString (*setRusLocale)();
 
-String setRusLocale();
+  int (*repeat)(int (*)(), CString);
+  int (*showMenu)(int count, CString labels[count]);
+  bool (*prompt)(CString question);
 
-bool prompt(String question);
+  void (*inputToken)(CString format, Pointer dest, CString prompt, CString errorMessage);
+  void (*inputAndValidateToken)(CString format, Pointer dest, CString prompt, CString errorMessage, Validator validator, Object_t context);
 
-#endif
+  int (*inputInt)(CString prompt, CString errorMessage);
+  double (*inputDouble)(CString prompt, CString errorMessage);
+  int (*inputIntFromInterval)(CString prompt, CString errorMessage, int min, int max);
+  double (*inputDoubleFromInterval)(CString prompt, CString errorMessage, double min, double max);
+
+  void (*newLine)();
+  void (*print)(String_t str);
+  void (*printObj)(Object_t obj);
+  int (*colored)(CString color, CString format, ...);
+});

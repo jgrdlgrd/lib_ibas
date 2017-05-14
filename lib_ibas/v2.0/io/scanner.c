@@ -2,137 +2,179 @@
 // Created by Павел on 21.12.2016.
 //
 
-#include <errno.h>
-
 #include "scanner.h"
+#include "../base/base.h"
 
-CString __Scanner_nextToken_(bool skipPrefix) {
-  CString buffer = NULL, oldBuffer = NULL;
-  int length = 0, allocated = 0;
-  char ch;
+E4C_DEFINE_EXCEPTION(EmptyTokenException, "Scanner: unable to produce next token!", FormatException);
+
+Scanner_t __Scanner_create(FILE *stream, String_t str, Object_t iter) {
+  Scanner_t self = Ibas.alloc(sizeof(Scanner_s), NULL);
+
+  self->class = Scanner.class;
+  self->multiline = true;
+  self->delimiters = " \t\n";
+  self->last = 0;
+
+  self->stream = stream;
+
+  if (str && !iter) iter = String.begin(str);
+  self->iter = iter;
+  self->str = str;
+
+  return self;
+}
+
+Scanner_t __Scanner_fromStream(FILE *stream) {
+  return __Scanner_create(stream, NULL, NULL);
+}
+
+Scanner_t __Scanner_fromString(String_t str, Object_t iter) {
+  return __Scanner_create(NULL, str, iter);
+}
+
+void __Scanner_destroy(Scanner_t self) {
+  free(self);
+}
+
+String_t __Scanner_toString(Scanner_t self) {
+  return String.format("[[Scanner stream=%p str=%p iter=%p]]", self->stream, self->str, self->iter);
+}
+
+int __Scanner_compare(Scanner_t obj1, Scanner_t obj2) {
+  throw(NotImplementedException, "Scanner.compare() not implemented!");
+}
+
+unsigned __Scanner_read(Scanner_t self, String_t buffer) {
+  char ch = 0;
+  bool inToken = false, eof = false;
+  unsigned count = 0;
 
   while (true) {
-    if (length == allocated) {
-      allocated += SCANNER_BUFFER_LENGTH;
-      buffer = realloc(buffer, allocated * sizeof(char) + 1);
-      if (buffer == NULL) {
-        free(oldBuffer);
-        return NULL;
-      }
-      oldBuffer = buffer;
+    //@formatter:off
+    try {
+      ch = Scanner.nextChar(self);
+    } catch(EOFException) {
+      eof = true;
+    }
+    //@formatter:on
+
+    if (eof) break;
+
+    if (strchr(self->delimiters, ch)) {
+      if (inToken || (ch == '\n' && !self->multiline)) {
+        self->last = ch;
+        break;
+      } else continue;
     }
 
-    while (true) {
-      if (feof(Scanner.stream)) goto end;
-      ch = (char) fgetc(Scanner.stream);
-      if (strchr(Scanner.delimiters, ch)) {
-        if (!skipPrefix) goto end;
-        continue;
-      }
-      break;
-    }
-
-    skipPrefix = false;
-    buffer[length++] = ch;
+    inToken = true;
+    count++;
+    if (buffer) String.add(buffer, ch);
   }
 
-  end:
-  buffer[length] = 0;
+  return count;
+}
+
+String_t __Scanner_nextToken(Scanner_t self) {
+  String_t buffer = String.create(0);
+  __Scanner_read(self, buffer);
   return buffer;
 }
 
-CString __Scanner_nextToken() {
-  return __Scanner_nextToken_(true);
+void __Scanner_nextFormat(Scanner_t self, CString_t format, Pointer_t dest) {
+  //@formatter:off
+  $withObj(String_t, token) {
+    token = Scanner.nextToken(self);
+  } use {
+    if (!token->size) {
+      throw(EmptyTokenException, NULL);
+    }
+
+    String_t _format = CString_w->toString(format);
+    String.appendCStr(_format, "%n");
+
+    int count;
+    int ret = sscanf(String.CStr(token), String.CStr(_format), dest, &count);
+
+    if (ret < 0) throw(RuntimeException, "Scanner: unknown error!");
+    if (ret == 0 || count < token->size) throw(FormatException, NULL);
+  };
+  //@formatter:on
 }
 
-int __Scanner_next(CString format, Pointer dest) {
-  CString token = Scanner.nextToken();
+char __Scanner_nextChar(Scanner_t self) {
+  char ch = 0;
 
-  if (!token) {
-    return -1;
+  if (self->last) {
+    ch = self->last;
+  } else if (self->stream && !feof(self->stream)) {
+    ch = (char) fgetc(self->stream);
+  } else if (self->str && self->iter != String.end(self->str)) {
+    ch = String.iterGet(self->str, self->iter);
+    self->iter = String.iterNext(self->str, self->iter);
+  } else {
+    throw(EOFException, NULL);
   }
 
-  size_t tokenLength = strlen(token), formatLength = strlen(format);
-
-  CString _format = malloc(formatLength + 3);
-  if (!_format) {
-    free(token);
-    return -2;
-  }
-
-  strcpy(_format, format);
-  strcpy(_format + formatLength, "%n");
-
-  int count;
-  int ret = sscanf(token, _format, dest, &count);
-  free(token);
-
-  if (ret < 0) {
-    return ret;
-  } else if (ret == 0) {
-    return 1;
-  } else if (count < tokenLength) {
-    return 2;
-  }
-
-  return 0;
+  self->last = 0;
+  return ch;
 }
 
-int __Scanner_nextInt() {
+int __Scanner_nextInt(Scanner_t self) {
   int ret = 0;
-
-  int err = Scanner.next("%d", &ret);
-  if (err) {
-    errno = err;
-  }
-
+  Scanner.nextFormat(self, "%d", &ret);
   return ret;
 }
 
-double __Scanner_nextDouble() {
+double __Scanner_nextDouble(Scanner_t self) {
   double ret = 0;
-
-  int err = Scanner.next("%lf", &ret);
-  if (err) {
-    errno = err;
-  }
-
+  Scanner.nextFormat(self, "%lf", &ret);
   return ret;
 }
 
-CString __Scanner_nextLine() {
-  CString delims = Scanner.delimiters;
-  Scanner.delimiters = "\n";
+String_t __Scanner_nextLine(Scanner_t self) {
+  CString_t delims = self->delimiters;
+  self->delimiters = "\n";
+  bool multi = self->multiline;
+  self->multiline = false;
 
-  CString ret = __Scanner_nextToken_(false);
+  String_t ret = Scanner.nextToken(self);
+  self->last = 0;
 
-  Scanner.delimiters = delims;
+  self->delimiters = delims;
+  self->multiline = multi;
   return ret;
 }
 
-CString __Scanner_nextText() {
-  char *text, *nextL;
-  text = Scanner.nextLine();
-  if (*text == '\0')
-    return text;
-  size_t length = strlen(text) + 2, newLength;
-  while ((newLength = strlen(nextL = Scanner.nextLine()))) {
-    *(text + length - 2) = '\n';
-    length += newLength + 1;
-    realloc(text, length);
-    strcpy(text + length - newLength - 2, nextL);
-    free(nextL);
-  }
-  return text;
+String_t __Scanner_nextText(Scanner_t self) {
+  //TODO implement
+  return NULL;
 }
 
-Scanner_c Scanner = {
-    NULL,
-    " \t\n",
-    __Scanner_next,
+unsigned __Scanner_skip(Scanner_t self) {
+  return __Scanner_read(self, NULL);
+}
+
+unsigned __Scanner_skipLine(Scanner_t self) {
+  unsigned count = 0;
+  while (Scanner.nextChar(self) != '\n') count++;
+  return count;
+}
+
+$defineNamespace(Scanner) {
+    (Class_t) &Scanner.destroy,
+    __Scanner_fromStream,
+    __Scanner_fromString,
+    __Scanner_destroy,
+    __Scanner_toString,
+    __Scanner_compare,
     __Scanner_nextToken,
+    __Scanner_nextFormat,
+    __Scanner_nextChar,
     __Scanner_nextInt,
     __Scanner_nextDouble,
     __Scanner_nextLine,
-    __Scanner_nextText
+    __Scanner_nextText,
+    __Scanner_skip,
+    __Scanner_skipLine
 };

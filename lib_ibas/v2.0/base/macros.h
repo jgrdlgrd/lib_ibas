@@ -4,28 +4,65 @@
 
 #pragma once
 
-#define declareType(name) \
-    typedef struct name name##_s; \
-    typedef name##_s* name##_t;
+/*---- BASIC ----*/
 
-#define declareInterface(name, members) \
-    typedef Object name##_t; \
-    typedef struct members *name##_i; \
+#define $str(arg) $str1(arg)
+#define $str1(arg) #arg
 
-#define declareClass(name, members) \
-    typedef struct members name##_c; \
-    extern name##_c name; \
-    extern Pointer name##_class[];
+#define $paste(arg1, arg2) $paste1(arg1, arg2)
+#define $paste1(arg1, arg2) arg1 ## arg2
+#define $paste3(arg1, arg2, arg3) $paste($paste1(arg1, arg2), arg3)
 
-#define implements(className, interfaceName, offset) #interfaceName, (void *) &className + (offset) * sizeof(void *)
+#define $fnType(ret, args...) typeof(ret (*)(args))
+#define $arrType(type, size) typeof(type[size])
+#define $ptrType(type) typeof(type*)
 
-//TODO consider other alternatives
-#define max(a,b) \
+/*---- UTILITY ----*/
+
+#define $max(a, b) \
    ({ __typeof__ (a) _a = (a); \
        __typeof__ (b) _b = (b); \
      _a > _b ? _a : _b; })
 
-#define min(a,b) \
+#define $min(a, b) \
    ({ __typeof__ (a) _a = (a); \
        __typeof__ (b) _b = (b); \
      _a < _b ? _a : _b; })
+
+/*---- EXCEPTION HANDLING ----*/
+
+#define $disposeObj(obj, failed) Object.destroy(obj)
+#define $withObj(type, obj) type obj = NULL; with(obj, $disposeObj)
+
+#define $disposeObjF(obj, failed) if (failed) Object.destroy(obj)
+#define $withObjF(obj) with(obj, $disposeObjF)
+
+/*---- NAMESPACES AND TYPES ----*/
+
+#define $ns(name) $paste3(__, $namespace, _##name)
+
+#define $declareType(name) \
+    typedef struct name name##_s; \
+    typedef name##_s* name##_t;
+
+#define $defineType(name) struct name
+
+#define $declareInterface(name) \
+    typedef struct name* name##_i; \
+    struct name
+
+#define $declareNamespace(name) \
+    extern struct name##_c name; \
+    struct name##_c
+
+#define $defineNamespace(name) struct name##_c name =
+
+#define $declareWrapper(name) extern Class_t name##_w
+
+#define $defineWrapper(name) \
+    Class_s name##_c = (Class_s) { \
+      (Destroy_t) __##name##_destroy, \
+      (ToString_t) __##name##_toString, \
+      (Compare_t) __##name##_compare \
+    }; \
+    Class_t name##_w = &name##_c

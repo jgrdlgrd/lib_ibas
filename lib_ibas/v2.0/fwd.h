@@ -13,34 +13,17 @@
 #include <limits.h>
 
 #include "e4c/e4c.h"
+
 #include "base/macros.h"
+#include "base/types.h"
 
-typedef char *CString;
-typedef void *Object, *Pointer;
+E4C_DECLARE_EXCEPTION(NotImplementedException);
+E4C_DECLARE_EXCEPTION(UnsupportedOperationException);
+E4C_DECLARE_EXCEPTION(EOFException);
+E4C_DECLARE_EXCEPTION(FormatException);
+E4C_DECLARE_EXCEPTION(EmptyTokenException);
 
-typedef int (*Validator)(Object, Object);
-
-typedef struct {
-  Object first, second;
-} Pair;
-
-typedef struct {
-  int first, second;
-} IntPair;
-
-typedef struct {
-  double first, second;
-} DoublePair;
-
-typedef struct {
-  Object first, second, third;
-} Triple;
-
-typedef struct Vector String_s;
-typedef String_s* String_t;
-
-typedef String_t (*ToString_t)(Object);
-
-declareType(Vector);
-
-declareType(LinkedList);
+#define $ObjectMethods(name) \
+    void (*destroy)(name##_t self); \
+    String_t (*toString)(name##_t self); \
+    int (*compare)(name##_t obj1, name##_t obj2)

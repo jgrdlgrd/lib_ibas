@@ -9,35 +9,40 @@
 //TODO rewrite a few methods
 
 //TODO add more colors
-declareClass(Colors, {
-  CString RESET;
-  CString RED;
-  CString GREEN;
-});
+$declareNamespace(Colors) {
+  CString_t RESET;
+  CString_t RED;
+  CString_t GREEN;
+};
 
-declareClass(Console, {
+$declareNamespace(Console) {
+  Scanner_t scanner;
   bool autoDestroyStrings;
   bool autoDestroyObjects;
 
   void (*clearScreen)();
   void (*flush)();
   void (*pause)();
-  CString (*setRusLocale)();
+  CString_t (*setRusLocale)();
 
-  int (*repeat)(int (*)(), CString);
-  int (*showMenu)(int count, CString labels[count]);
-  bool (*prompt)(CString question);
+  void (*repeat)(void (*fn)(int count), CString_t question);
+  int (*showMenu)(int count, CString_t labels[count]);
+  bool (*prompt)(CString_t question);
 
-  int (*inputToken)(CString format, Pointer dest, CString prompt, CString errorMessage);
-  int (*inputAndValidateToken)(CString format, Pointer dest, CString prompt, CString errorMessage, Validator validator, Object context);
+  void (*inputToken)(CString_t format, Pointer_t dest, CString_t prompt, CString_t errorMessage);
+  void (*inputAndValidateToken)(CString_t format, Pointer_t dest, CString_t prompt, CString_t errorMessage, Validator validator, Object_t context);
 
-  int (*inputInt)(CString prompt, CString errorMessage);
-  double (*inputDouble)(CString prompt, CString errorMessage);
-  int (*inputIntFromInterval)(CString prompt, CString errorMessage, int min, int max);
-  double (*inputDoubleFromInterval)(CString prompt, CString errorMessage, double min, double max);
+  int (*inputInt)(CString_t prompt, CString_t errorMessage);
+  double (*inputDouble)(CString_t prompt, CString_t errorMessage);
+  int (*inputIntFromInterval)(CString_t prompt, CString_t errorMessage, int min, int max);
+  double (*inputDoubleFromInterval)(CString_t prompt, CString_t errorMessage, double min, double max);
 
   void (*newLine)();
   void (*print)(String_t str);
-  void (*printObj)(Object obj);
-  int (*colored)(CString color, CString format, ...);
-});
+  void (*println)(String_t str);
+  void (*CPrint)(CString_t str);
+  void (*CPrintln)(CString_t str);
+  void (*printObj)(Object_t obj);
+  void (*format)(CString_t format, ...);
+  void (*colored)(CString_t color, CString_t format, ...);
+};

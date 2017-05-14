@@ -3,146 +3,168 @@
 //
 
 #include "linked-list.h"
-#include "../base/ibas.h"
-#include "../base/string.h"
+#include "../base/base.h"
+#include "../io/console.h"
 
-#define __PTR_SIZE sizeof(Pointer)
+#define __PTR_SIZE sizeof(Pointer_t)
 
-//TODO only a madman would implement dynamic types in C
-/*void __LinkedList_instanceCheck(LinkedList_t obj, bool typeOnly) {
-  if (obj->class != &LinkedList) throw(IllegalArgumentException, "LinkedList: dynamic type check failed!");
-  if (typeOnly) return;
-  if ((LinkedList_t) obj->elemSize == 0) throw(IllegalArgumentException, "LinkedList: trying to operate on non-initialized instance!");
-}*/
+Compare_t __LinkedList_sortComparator;
 
-LinkedList_t __LinkedList_create(size_t elemSize, ToString_t stringifier) {
-  if (!elemSize) throw(IllegalArgumentException, "LinkedList: elemSize must be greater than zero!");
-
-  LinkedList_t list = Ibas.alloc(sizeof(LinkedList_s), NULL);
-
-  list->class = &LinkedList_class;
-  list->size = 0;
-  list->head = &list->head;
-  list->tail = &list->tail;
-  list->elemSize = elemSize;
-  list->stringifier = stringifier;
-
+LinkedList_t __LinkedList_create() {
+  LinkedList_t list = LinkedList.createPrimitive(__PTR_SIZE, Object.class);
+  list->primitive = false;
   return list;
 }
 
-void __LinkedList_destroy(LinkedList_t list) {
-  if (!list) return;
+LinkedList_t __LinkedList_createPrimitive(size_t elemSize, Class_t elemClass) {
+  if (!elemSize) throw(IllegalArgumentException, "LinkedList: elemSize must be greater than zero!");
 
-  LinkedList.clear(list);
-  free(list);
+  LinkedList_t self = Ibas.alloc(sizeof(LinkedList_s), NULL);
+
+  self->class = LinkedList.class;
+  self->size = 0;
+  self->head = &self->head;
+  self->tail = &self->tail;
+  self->elemSize = elemSize;
+  self->elemClass = elemClass;
+  self->primitive = true;
+
+  return self;
 }
 
-String_t __LinkedList_toString(LinkedList_t list) {
-  if (list->stringifier) return List.toString(list, list->stringifier);
-  else return String.format("[[LinkedList size=%zd elemSize=%zd head=%p tail=%p]]", list->size, list->elemSize, list->head, list->tail);
+void __LinkedList_destroy(LinkedList_t self) {
+  if (!self) return;
+
+  LinkedList.clear(self);
+  free(self);
 }
 
-Pointer __LinkedList_get(LinkedList_t list, int i) {
-  if (i < 0 || i >= list->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
+String_t __LinkedList_toString(LinkedList_t self) {
+  if (!self->elemClass)
+    return String.format("[[LinkedList size=%zd elemSize=%zd head=%p tail=%p]]", self->size, self->elemSize, self->head, self->tail);
 
-  return LinkedList.iterGet(list, LinkedList.iter(list, i));
+  return List.toString(self, LinkedList.toList(self), self->elemClass->toString);
 }
 
-void __LinkedList_set(LinkedList_t list, int i, Pointer val) {
-  if (i < 0 || i >= list->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
-
-  LinkedList.iterSet(list, LinkedList.iter(list, i), val);
+int __LinkedList_compare(LinkedList_t list1, LinkedList_t list2) {
+  throw(NotImplementedException, "LinkedList.compare() is not implemented!");
 }
 
-void __LinkedList_add(LinkedList_t list, Pointer val) {
-  LinkedList.insert(list, (int) list->size, val);
+List_i __LinkedList_toList(LinkedList_t self) {
+  return (List_i) &LinkedList.toList;
 }
 
-void __LinkedList_insert(LinkedList_t list, int i, Pointer val) {
-  if (i < 0 || i > list->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
+Pointer_t __LinkedList_get(LinkedList_t self, int i) {
+  if (i < 0 || i >= self->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
 
-  LinkedList.iterInsert(list, LinkedList.iter(list, i), val);
+  return LinkedList.iterGet(self, LinkedList.iter(self, i));
 }
 
-void __LinkedList_addAll(LinkedList_t list1, LinkedList_t list2) {
-  LinkedList.insertAll(list1, (int) list1->size, list2);
+void __LinkedList_set(LinkedList_t self, int i, Pointer_t val) {
+  if (i < 0 || i >= self->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
+
+  LinkedList.iterSet(self, LinkedList.iter(self, i), val);
 }
 
-void __LinkedList_insertAll(LinkedList_t list1, int i, LinkedList_t list2) {
-  if (i < 0 || i > list1->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
-
-  LinkedList.iterInsertAll(list1, LinkedList.iter(list1, i), list2);
+void __LinkedList_add(LinkedList_t self, Pointer_t val) {
+  LinkedList.insert(self, (int) self->size, val);
 }
 
-void __LinkedList_remove(LinkedList_t list, int i) {
-  if (i < 0 || i >= list->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
+void __LinkedList_insert(LinkedList_t self, int i, Pointer_t val) {
+  if (i < 0 || i > self->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
 
-  LinkedList.iterRemove(list, LinkedList.iter(list, i));
+  LinkedList.iterInsert(self, LinkedList.iter(self, i), val);
 }
 
-void __LinkedList_clear(LinkedList_t list) {
-  Pointer *nextPtr = list->head, tmp;
-  while (nextPtr != &list->head) {
+void __LinkedList_addAll(LinkedList_t self, LinkedList_t list) {
+  LinkedList.insertAll(self, (int) self->size, list);
+}
+
+void __LinkedList_insertAll(LinkedList_t self, int i, LinkedList_t list) {
+  if (i < 0 || i > self->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
+
+  LinkedList.iterInsertAll(self, LinkedList.iter(self, i), list);
+}
+
+void __LinkedList_remove(LinkedList_t self, int i) {
+  if (i < 0 || i >= self->size) throw(IllegalArgumentException, "LinkedList: index out of bounds!");
+
+  LinkedList.iterRemove(self, LinkedList.iter(self, i));
+}
+
+void __LinkedList_clear(LinkedList_t self) {
+  Pointer_t *nextPtr = self->head, tmp;
+  while (nextPtr != &self->head) {
     tmp = nextPtr;
     nextPtr = *nextPtr;
     free(tmp);
   }
 
-  list->size = 0;
-  list->head = &list->head;
-  list->tail = &list->tail;
+  self->size = 0;
+  self->head = &self->head;
+  self->tail = &self->tail;
 }
 
-int __LinkedList_indexOf(LinkedList_t list, Pointer val) {
-  int i = 0;
-  Object it = LinkedList.begin(list), end = LinkedList.end(list);
+size_t __LinkedList_size(LinkedList_t self) {
+  return self->size;
+}
 
-  for (; it != end; it = LinkedList.iterNext(list, it)) {
-    if (!memcmp(LinkedList.iterGet(list, it), val, list->elemSize)) break;
+int __LinkedList_indexOf(LinkedList_t self, Pointer_t val) {
+  if (!self->elemClass)
+    throw(UnsupportedOperationException, "LinkedList: no comparator defined!");
+
+  int i = 0;
+  Object_t it = LinkedList.begin(self), end = LinkedList.end(self);
+
+  for (; it != end; it = LinkedList.iterNext(self, it)) {
+    if (!self->elemClass->compare(LinkedList.iterGet(self, it), val)) break;
     i++;
   }
 
   return it == end ? -1 : i;
 }
 
-Object __LinkedList_iter(LinkedList_t list, int i) {
-  return LinkedList.iterJump(list, LinkedList.begin(list), i);
+Object_t __LinkedList_iter(LinkedList_t self, int i) {
+  return LinkedList.iterJump(self, LinkedList.begin(self), i);
 }
 
-Object __LinkedList_begin(LinkedList_t list) {
-  return list->head;
+Object_t __LinkedList_begin(LinkedList_t self) {
+  return self->head;
 }
 
-Object __LinkedList_end(LinkedList_t list) {
-  return &list->head;
+Object_t __LinkedList_end(LinkedList_t self) {
+  return &self->head;
 }
 
-Object __LinkedList_find(LinkedList_t list, Pointer val) {
-  Object it = LinkedList.begin(list);
-  for (; it != LinkedList.end(list); it = LinkedList.iterNext(list, it)) {
-    if (!memcmp(LinkedList.iterGet(list, it), val, list->elemSize)) break;
+Object_t __LinkedList_find(LinkedList_t self, Pointer_t val) {
+  if (!self->elemClass)
+    throw(UnsupportedOperationException, "LinkedList: no comparator defined!");
+
+  Object_t it = LinkedList.begin(self);
+  for (; it != LinkedList.end(self); it = LinkedList.iterNext(self, it)) {
+    if (!self->elemClass->compare(LinkedList.iterGet(self, it), val)) break;
   }
 
   return it;
 }
 
-Object __LinkedList_iterNext(LinkedList_t list, Object iter) {
-  return LinkedList.iterJump(list, iter, 1);
+Object_t __LinkedList_iterNext(LinkedList_t self, Object_t iter) {
+  return LinkedList.iterJump(self, iter, 1);
 }
 
-Object __LinkedList_iterPrev(LinkedList_t list, Object iter) {
-  return LinkedList.iterJump(list, iter, -1);
+Object_t __LinkedList_iterPrev(LinkedList_t self, Object_t iter) {
+  return LinkedList.iterJump(self, iter, -1);
 }
 
-Object __LinkedList_iterJump(LinkedList_t list, Object iter, int length) {
-  Pointer *it = iter;
+Object_t __LinkedList_iterJump(LinkedList_t self, Object_t iter, int length) {
+  Pointer_t *it = iter;
   bool reverse = length < 0;
   if (reverse) {
     length = -length;
     it++;
   }
 
-  while (it != &list->head && it != &list->tail && length > 0) {
+  while (it != &self->head && it != &self->tail && length > 0) {
     it = *it;
     length--;
   }
@@ -151,18 +173,18 @@ Object __LinkedList_iterJump(LinkedList_t list, Object iter, int length) {
   return it;
 }
 
-Pointer __LinkedList_iterGet(LinkedList_t list, Object iter) {
+Pointer_t __LinkedList_iterGet(LinkedList_t self, Object_t iter) {
   return iter + 2 * __PTR_SIZE;
 }
 
-void __LinkedList_iterSet(LinkedList_t list, Object iter, Pointer val) {
-  memcpy(iter + 2 * __PTR_SIZE, val, list->elemSize);
+void __LinkedList_iterSet(LinkedList_t self, Object_t iter, Pointer_t val) {
+  memcpy(iter + 2 * __PTR_SIZE, self->primitive? val : &val, self->elemSize);
 }
 
-void __LinkedList_iterInsert(LinkedList_t list, Object iter, Pointer val) {
-  Pointer *next = iter;
-  Pointer *prev = *(next + 1) - __PTR_SIZE;
-  Pointer *new = Ibas.alloc(2 * __PTR_SIZE + list->elemSize, NULL);
+void __LinkedList_iterInsert(LinkedList_t self, Object_t iter, Pointer_t val) {
+  Pointer_t *next = iter;
+  Pointer_t *prev = *(next + 1) - __PTR_SIZE;
+  Pointer_t *new = Ibas.alloc(2 * __PTR_SIZE + self->elemSize, NULL);
 
   *prev = new;
   *new = next;
@@ -170,34 +192,124 @@ void __LinkedList_iterInsert(LinkedList_t list, Object iter, Pointer val) {
   *(next + 1) = new + 1;
   *(new + 1) = prev + 1;
 
-  memcpy(new + 2, val, list->elemSize);
-  list->size++;
+  memcpy(new + 2, self->primitive? val : &val, self->elemSize);
+  self->size++;
 }
 
-void __LinkedList_iterInsertAll(LinkedList_t list1, Object iter, LinkedList_t list2) {
-  if (list1->elemSize != list2->elemSize) throw(IllegalArgumentException, "LinkedList: element sizes don't match!");
+void __LinkedList_iterInsertAll(LinkedList_t self, Object_t iter, LinkedList_t list) {
+  if (self->elemSize != list->elemSize) throw(IllegalArgumentException, "LinkedList: element sizes don't match!");
 
-  for (Object i = LinkedList.begin(list2); i != LinkedList.end(list2); i = LinkedList.iterNext(list2, i)) {
-    LinkedList.iterInsert(list1, iter, LinkedList.iterGet(list2, i));
+  for (Object_t i = LinkedList.begin(list); i != LinkedList.end(list); i = LinkedList.iterNext(list, i)) {
+    LinkedList.iterInsert(self, iter, LinkedList.iterGet(list, i));
   }
 }
 
-void __LinkedList_iterRemove(LinkedList_t list, Object iter) {
-  Pointer *deleted = iter;
-  Pointer *prev = *(deleted + 1) - __PTR_SIZE;;
-  Pointer *next = *deleted;
+void __LinkedList_iterRemove(LinkedList_t self, Object_t iter) {
+  Pointer_t *deleted = iter;
+  Pointer_t *prev = *(deleted + 1) - __PTR_SIZE;;
+  Pointer_t *next = *deleted;
 
   *prev = next;
   *(next + 1) = prev + 1;
 
   free(deleted);
-  list->size--;
+  self->size--;
 }
 
-LinkedList_c LinkedList = {
+int __LinkedList_sortCompare(Pointer_t *ptr1, Pointer_t *ptr2) {
+  return __LinkedList_sortComparator(*ptr1, *ptr2);
+}
+
+void __LinkedList_sort(LinkedList_t self, Compare_t comparator) {
+  if (!comparator && !self->elemClass)
+    throw(UnsupportedOperationException, "LinkedList: no comparator defined!");
+
+  Compare_t tmpComp = __LinkedList_sortComparator;
+  __LinkedList_sortComparator = comparator ? comparator : self->elemClass->compare;
+
+  //@formatter:off
+  $withObj(Vector_t, vec) {
+    vec = Vector.create(self->size);
+  } use {
+    Object_t iter = LinkedList.begin(self);
+    while (iter != LinkedList.end(self)) {
+      Vector.add(vec, LinkedList.iterGet(self, iter));
+      iter = LinkedList.iterNext(self, iter);
+    }
+
+    Vector.sort(vec, (Compare_t) __LinkedList_sortCompare);
+
+    iter = Vector.begin(vec);
+    Pointer_t *prev = &self->head, *cur;
+
+    while (iter != Vector.end(vec)) {
+      cur = *(Pointer_t *) Vector.iterGet(vec, iter) - 2 * __PTR_SIZE;
+
+      *prev = cur;
+      *(cur + 1) = prev + 1;
+
+      iter = Vector.iterNext(vec, iter);
+      prev = cur;
+    }
+
+    cur = &self->head;
+    *prev = cur;
+    *(cur + 1) = prev + 1;
+  } finally {
+    __LinkedList_sortComparator = tmpComp;
+  };
+  //@formatter:off
+}
+
+String_t __LinkedList_toPrettyString(LinkedList_t self) {
+  if (!self->elemClass)
+    throw(UnsupportedOperationException, "LinkedList: no stringifier defined!");
+
+  String_t str = NULL;
+
+  //@formatter:off
+  $withObjF(str) {
+    str = String.create(0);
+  } use {
+    Object_t it = LinkedList.begin(self);
+    if (it != LinkedList.end(self)) {
+      while (true) {
+        Object_t elem = LinkedList.iterGet(self, it);
+
+        String.appendCStr(str, Colors.RED);
+        String.add(str, '[');
+        String.appendCStr(str, Colors.RESET);
+        
+        $withObj(String_t, str1) {
+          str1 = self->elemClass->toString(elem);
+        } use{
+          String.addAll(str, str1);
+        };
+
+        String.appendCStr(str, Colors.RED);
+        String.appendCStr(str, "]->");
+        String.appendCStr(str, Colors.RESET);
+  
+        it = LinkedList.iterNext(self, it);
+        if (it == LinkedList.end(self)) break;
+      }
+    }
+  
+    String.appendCStr(str, "NULL");
+  };
+  //@formatter:on
+
+  return str;
+}
+
+$defineNamespace(LinkedList) {
+    (Class_t) &LinkedList.destroy,
     __LinkedList_create,
+    __LinkedList_createPrimitive,
     __LinkedList_destroy,
     __LinkedList_toString,
+    __LinkedList_compare,
+    __LinkedList_toList,
     __LinkedList_get,
     __LinkedList_set,
     __LinkedList_add,
@@ -206,6 +318,7 @@ LinkedList_c LinkedList = {
     __LinkedList_insertAll,
     __LinkedList_remove,
     __LinkedList_clear,
+    __LinkedList_size,
     __LinkedList_indexOf,
     __LinkedList_iter,
     __LinkedList_begin,
@@ -218,9 +331,7 @@ LinkedList_c LinkedList = {
     __LinkedList_iterSet,
     __LinkedList_iterInsert,
     __LinkedList_iterInsertAll,
-    __LinkedList_iterRemove
+    __LinkedList_iterRemove,
+    __LinkedList_sort,
+    __LinkedList_toPrettyString
 };
-
-Pointer LinkedList_class[] = {implements(LinkedList, Object, 0),
-                              implements(LinkedList, List, 3),
-                              NULL};

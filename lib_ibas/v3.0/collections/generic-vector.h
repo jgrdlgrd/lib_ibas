@@ -9,14 +9,14 @@
 #define genericVectorDeclaration(class, elemType) \
   typedef Vector_t class##_t; \
    \
-  declareClass(class, { \
+  $declareClass(class, { \
     Vector_t (*create)(size_t capacity); \
     void (*destroy)(Vector_t vec); \
     String_t (*toString)(Vector_t vec); \
      \
     void (*ensureCapacity)(Vector_t vec, size_t capacity); \
      \
-    ListMethods(Vector, vec, elemType); \
+    $List_methods(Vector, vec, elemType); \
   });
 
 
@@ -45,19 +45,19 @@
     return Vector.indexOf(vec, &val); \
   } \
    \
-  Object __##class##_find(Vector_t vec, elemType val) { \
+  Object_t __##class##_find(Vector_t vec, elemType val) { \
     return Vector.find(vec, &val); \
   } \
    \
-  elemType __##class##_iterGet(Vector_t vec, Object iter) { \
+  elemType __##class##_iterGet(Vector_t vec, Object_t iter) { \
     return *(elemType*)Vector.iterGet(vec, iter); \
   } \
    \
-  void __##class##_iterSet(Vector_t vec, Object iter, elemType val) { \
+  void __##class##_iterSet(Vector_t vec, Object_t iter, elemType val) { \
     Vector.iterSet(vec, iter, &val); \
   } \
    \
-  void __##class##_iterInsert(Vector_t vec, Object iter, elemType val) { \
+  void __##class##_iterInsert(Vector_t vec, Object_t iter, elemType val) { \
     Vector.iterInsert(vec, iter, &val); \
   }
 

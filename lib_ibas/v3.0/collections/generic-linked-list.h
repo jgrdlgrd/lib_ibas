@@ -9,12 +9,12 @@
 #define genericLinkedListDeclaration(className, elemType) \
   typedef LinkedList_t className##_t; \
    \
-  declareClass(className, { \
+  $declareClass(className, { \
     LinkedList_t (*create)(); \
     void (*destroy)(LinkedList_t list); \
     String_t (*toString)(LinkedList_t list); \
      \
-    ListMethods(LinkedList, list, elemType); \
+    $List_methods(LinkedList, list, elemType); \
   });
 
 

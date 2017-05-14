@@ -1,29 +1,43 @@
 //
-// Created by Павел on 07.04.2017.
+// Created by Павел on 14.05.2017.
 //
 
 #include "list.h"
-#include "../base/ibas.h"
-#include "../base/string.h"
+#include "../base/base.h"
 
-String_t __List_toString(List_t list, ToString_t stringifier) {
-  List_i impl = Ibas.getImpl(list, "List");
-  String_t str = ToString.CStr("[");
+String_t __List_toString(Object_t list, List_i class, ToString_t stringifier) {
+  String_t str = NULL;
 
-  for (Object i = impl->begin(list); ; ) {
-    String.addAll(str, stringifier(impl->iterGet(list, i)));
+  //@formatter:off
+  $withObjF(str) {
+    str = CString_w->toString("[");
+  } use {
+    Object_t it = class->begin(list);
+    if (it != class->end(list)) {
+      while (true) {
+        Object_t elem = class->iterGet(list, it);
 
-    i = impl->iterNext(list, i);
-    if (i == impl->end(list)) break;
+        $withObj(String_t, str1) {
+          str1 = stringifier(elem);
+        } use{
+          String.addAll(str, str1);
+        };
 
-    String.appendCStr(str, ", ");
-  }
+        it = class->iterNext(list, it);
+        if (it == class->end(list)) break;
 
-  String.add(str, ']');
-  /*TODO trim to size*/
+        String.appendCStr(str, ", ");
+      }
+    }
+
+    String.add(str, ']');
+    //TODO trim to size
+  };
+  //@formatter:on
+
   return str;
 }
 
-List_c List = {
+$defineNamespace(List) {
     __List_toString
 };

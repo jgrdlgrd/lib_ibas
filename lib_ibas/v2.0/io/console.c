@@ -3,14 +3,12 @@
 //
 
 #include <locale.h>
-#include <errno.h>
 
 #include "console.h"
 #include "scanner.h"
-#include "../base/ibas.h"
-#include "../base/string.h"
+#include "../base/base.h"
 
-Colors_c Colors = {
+$defineNamespace(Colors) {
     "\033[0m",
     "\033[1;31m",
     "\033[1;32m"
@@ -31,13 +29,13 @@ void __Console_flush() {
 
 void __Console_pause() {
 #ifdef __CYGWIN__
-  //getchar();
+  getchar();
 #else
   system("pause");
 #endif
 }
 
-CString __Console_setRusLocale() {
+CString_t __Console_setRusLocale() {
 #ifdef __CYGWIN__
   return setlocale(LC_ALL, "ru_RU.utf8");
 #else
@@ -45,17 +43,16 @@ CString __Console_setRusLocale() {
 #endif
 }
 
-int __Console_repeat(int (*f)(), CString question) {
-  int err = 0;
+void __Console_repeat(void (*fn)(int count), CString_t question) {
+  int count = 0;
   do {
-    err = f();
-  } while (!err && Console.prompt(question));
-  return err;
+    fn(count++);
+  } while (Console.prompt(question));
 }
 
-int __Console_showMenu(int count, CString labels[count]) {
-  static CString prompt = "Выберите действие: ";
-  static CString errorMessage = "Недопустимое действие!\n";
+int __Console_showMenu(int count, CString_t labels[count]) {
+  static CString_t prompt = "Выберите действие: ";
+  static CString_t errorMessage = "Недопустимое действие!\n";
 
   printf(prompt);
   Console.newLine();
@@ -65,78 +62,71 @@ int __Console_showMenu(int count, CString labels[count]) {
   }
   Console.newLine();
 
-  errno = 0;
   int option = Console.inputIntFromInterval(prompt, errorMessage, 1, count);
-  if (errno) {
-    errno = 0;
-    return -abs(errno);
-  }
   return option;
 }
 
-bool __Console_prompt(CString question) {
+bool __Console_prompt(CString_t question) {
   printf(question);
-  CString str = Scanner.nextToken();
-  if (!str) {
-    return false;
-  }
-  char ch = *str;
   bool ans = false;
-  if (ch == 'Y' || ch == 'y') ans = true;
-  else if (ch == -48) {
-    ch = *(str + 1);
-    ans = ch == -67 || ch == -99;
+
+  //@formatter:off
+  $withObj(String_t, str) {
+    str = Scanner.nextToken(Console.scanner);
+  } use {
+    if (str->size) {
+      char ch = String.get(str, 0);
+      if (ch == 'Y' || ch == 'y') ans = true;
+      else if (ch == -48 && str->size > 1) {
+        ch = String.get(str, 1);
+        ans = ch == -67 || ch == -99;
+      }
+    }
   };
-  free(str);
+  //@formatter:off
+
   return ans;
 }
 
-int __Console_inputToken(CString format, Pointer dest, CString prompt, CString errorMessage) {
-  FILE *oldStream = Scanner.stream;
-  Scanner.stream = stdin;
-
-  int err = 0;
+void __Console_inputToken(CString_t format, Pointer_t dest, CString_t prompt, CString_t errorMessage) {
   while (true) {
     if (prompt) {
       printf(prompt);
     }
 
-    err = Scanner.next(format, dest);
-    if (err <= 0 || (err > 0 && errorMessage == NULL)) {
-      break;
+    //@formatter:off
+    try {
+      Scanner.nextFormat(Console.scanner, format, dest);
+    } catch (FormatException) {
+      if (errorMessage) printf(errorMessage);
+      else rethrow("Console: invalid token and no errorMessage!");
     }
-
-    printf(errorMessage);
+    //@formatter:on
   }
-
-  Scanner.stream = oldStream;
-  return err;
 }
 
-int __Console_inputAndValidateToken(CString format, Pointer dest, CString prompt, CString errorMessage, Validator validator, Object context) {
+void __Console_inputAndValidateToken(CString_t format, Pointer_t dest, CString_t prompt, CString_t errorMessage, Validator validator, Object_t context) {
   while (true) {
-    int err = Console.inputToken(format, dest, prompt, errorMessage);
+    Console.inputToken(format, dest, prompt, errorMessage);
     //prompt = NULL;
 
-    if (!err) {
-      err = validator(context, dest);
-    }
+    int err = validator(context, dest);
 
     if (!err || errorMessage == NULL) {
-      return err;
+      return;
     }
 
     //printf(errorMessage);
   }
 }
 
-int __Console_inputInt(CString prompt, CString errorMessage) {
+int __Console_inputInt(CString_t prompt, CString_t errorMessage) {
   int ret = 0;
   Console.inputToken("%d", &ret, prompt, errorMessage);
   return ret;
 }
 
-double __Console_inputDouble(CString prompt, CString errorMessage) {
+double __Console_inputDouble(CString_t prompt, CString_t errorMessage) {
   double ret = 0;
   Console.inputToken("%lf", &ret, prompt, errorMessage);
   return ret;
@@ -149,11 +139,11 @@ int __Console_intRangeValidator(Triple *ctx, int *val) {
     return 0;
   }
 
-  printf((CString) ctx->third, min, max);
+  printf((CString_t) ctx->third, min, max);
   return (*val < min) ? -1 : 1;
 }
 
-int __Console_inputIntFromInterval(CString prompt, CString errorMessage, int min, int max) {
+int __Console_inputIntFromInterval(CString_t prompt, CString_t errorMessage, int min, int max) {
   int ret;
   Triple ctx = {&min, &max, errorMessage};
   Console.inputAndValidateToken("%d", &ret, prompt, errorMessage, (Validator) __Console_intRangeValidator, &ctx);
@@ -167,11 +157,11 @@ int __Console_doubleRangeValidator(Triple *ctx, double *val) {
     return 0;
   }
 
-  printf((CString) ctx->third, min, max);
+  printf((CString_t) ctx->third, min, max);
   return (*val < min) ? -1 : 1;
 }
 
-double __Console_inputDoubleFromInterval(CString prompt, CString errorMessage, double min, double max) {
+double __Console_inputDoubleFromInterval(CString_t prompt, CString_t errorMessage, double min, double max) {
   double ret;
   Triple ctx = {&min, &max, errorMessage};
   Console.inputAndValidateToken("%lf", &ret, prompt, errorMessage, (Validator) __Console_doubleRangeValidator, &ctx);
@@ -183,33 +173,54 @@ void __Console_newLine() {
 }
 
 void __Console_print(String_t str) {
-  printf("%.*s", (int) str->size, (CString) str->storage);
+  printf("%.*s", (int) str->size, (CString_t) str->storage);
 
   if (Console.autoDestroyStrings) String.destroy(str);
 }
 
-void __Console_printObj(Object obj) {
+void __Console_println(String_t str) {
+  Console.print(str);
+  Console.newLine();
+}
+
+void __Console_CPrint(CString_t str) {
+  fputs(str, stdout);
+}
+
+void __Console_CPrintln(CString_t str) {
+  Console.CPrint(str);
+  Console.newLine();
+}
+
+void __Console_printObj(Object_t obj) {
   bool tmp = Console.autoDestroyStrings;
   Console.autoDestroyStrings = true;
 
-  Console.print(ToString.Object(obj)); //TODO WTF??
+  Console.print(Object.toString(obj));
 
   Console.autoDestroyStrings = tmp;
 
-  if (Console.autoDestroyObjects) Ibas.destroy(obj);
+  if (Console.autoDestroyObjects) Object.destroy(obj);
 }
 
-int __Console_colored(CString color, CString format, ...) {
+void __Console_format(CString_t format, ...) {
   va_list args;
-  va_start (args, format);
+  va_start(args, format);
+  vprintf(format, args);
+  va_end (args);
+}
+
+void __Console_colored(CString_t color, CString_t format, ...) {
+  va_list args;
+  va_start(args, format);
   printf(color);
-  int ret = vprintf (format, args);
+  vprintf(format, args);
   printf(Colors.RESET);
   va_end (args);
-  return ret;
 }
 
-Console_c Console = {
+$defineNamespace(Console) {
+    NULL,
     false,
     false,
     __Console_clearScreen,
@@ -227,6 +238,10 @@ Console_c Console = {
     __Console_inputDoubleFromInterval,
     __Console_newLine,
     __Console_print,
+    __Console_println,
+    __Console_CPrint,
+    __Console_CPrintln,
     __Console_printObj,
+    __Console_format,
     __Console_colored
 };
