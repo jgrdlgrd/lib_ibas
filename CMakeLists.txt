@@ -16,7 +16,7 @@ FILE(GLOB_RECURSE LIB_1.5 lib_ibas/v1.5/*.[ch])
 FILE(GLOB_RECURSE LIB_1.9 lib_ibas/v1.9/*.[ch])
 
 FILE(GLOB_RECURSE LIB_2.0 lib_ibas/v2.0/*.[ch])
-set(LIB_2.0 ${LIB_2.0} ${E4C})
+#set(LIB_2.0 ${LIB_2.0} ${E4C})
 
 FILE(GLOB_RECURSE LIB_3.0 lib_ibas/v3.0/*.[ch])
 set(LIB_3.0 ${LIB_3.0} ${E4C})

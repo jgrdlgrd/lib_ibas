@@ -12,7 +12,7 @@ Vector_t __Vector_create(size_t capacity) {
 }
 
 Vector_t __Vector_createPrimitive(size_t capacity, size_t elemSize, Class_t elemClass) {
-  if (!elemSize) throw(IllegalArgumentException, "Vector: elemSize must be greater than zero!");
+  if (!elemSize) $throw(IllegalArgumentException, "Vector: elemSize must be greater than zero!");
 
   Vector_t self = Ibas.alloc(sizeof(Vector_s), NULL);
 
@@ -43,7 +43,8 @@ String_t __Vector_toString(Vector_t self) {
 }
 
 int __Vector_compare(Vector_t vec1, Vector_t vec2) {
-  throw(NotImplementedException, "Vector.compare() is not implemented!");
+  $throw(NotImplementedException, "Vector.compare() is not implemented!");
+  return 0;
 }
 
 List_i __Vector_toList(Vector_t self) {
@@ -51,19 +52,19 @@ List_i __Vector_toList(Vector_t self) {
 }
 
 Pointer_t __Vector_get(Vector_t self, int i) {
-  if (i < 0 || i >= self->size) throw(IllegalArgumentException, "Vector: index out of bounds!");
+  if (i < 0 || i >= self->size) $throw(IllegalArgumentException, "Vector: index out of bounds!");
 
   return Vector.iterGet(self, Vector.iter(self, i));
 }
 
 void __Vector_set(Vector_t self, int i, Pointer_t val) {
-  if (i < 0 || i >= self->size) throw(IllegalArgumentException, "Vector: index out of bounds!");
+  if (i < 0 || i >= self->size) $throw(IllegalArgumentException, "Vector: index out of bounds!");
 
   Vector.iterSet(self, Vector.iter(self, i), val);
 }
 
 void __Vector_insertSlice(Vector_t self, int i, Pointer_t slice, size_t size) {
-  if (i < 0 || i > self->size) throw(IllegalArgumentException, "Vector: index out of bounds!");
+  if (i < 0 || i > self->size) $throw(IllegalArgumentException, "Vector: index out of bounds!");
 
   size_t cap = self->capacity;
   while (cap < self->size + size) {
@@ -90,7 +91,7 @@ void __Vector_addAll(Vector_t self, Vector_t vec) {
 }
 
 void __Vector_insertAll(Vector_t self, int i, Vector_t vec) {
-  if (self->elemSize != vec->elemSize) throw(IllegalArgumentException, "Vector: element sizes don't match!");
+  if (self->elemSize != vec->elemSize) $throw(IllegalArgumentException, "Vector: element sizes don't match!");
 
   __Vector_insertSlice(self, i, vec->storage, vec->size);
 }
@@ -138,7 +139,7 @@ Object_t __Vector_end(Vector_t self) {
 
 Object_t __Vector_find(Vector_t self, Pointer_t val) {
   if (!self->elemClass)
-    throw(UnsupportedOperationException, "Vector: no comparator defined!");
+    $throw(UnsupportedOperationException, "Vector: no comparator defined!");
 
   Object_t it = Vector.begin(self);
   for (; it != Vector.end(self); it = Vector.iterNext(self, it)) {
@@ -184,7 +185,7 @@ void __Vector_ensureCapacity(Vector_t self, size_t capacity) {
   if (capacity <= self->capacity) return;
 
   Pointer_t storage = realloc(self->storage, capacity * self->elemSize);
-  if (!storage) throw(NotEnoughMemoryException, "Could not increase the vector's capacity");
+  if (!storage) $throw(NotEnoughMemoryException, "Could not increase the vector's capacity");
 
   self->storage = storage;
   self->capacity = capacity;
@@ -192,7 +193,7 @@ void __Vector_ensureCapacity(Vector_t self, size_t capacity) {
 
 void __Vector_sort(Vector_t self, Compare_t comparator) {
   if (!comparator && !self->elemClass)
-    throw(UnsupportedOperationException, "Vector: no comparator defined!");
+    $throw(UnsupportedOperationException, "Vector: no comparator defined!");
 
   if (!comparator) comparator = self->elemClass->compare;
 

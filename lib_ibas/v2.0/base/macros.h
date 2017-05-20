@@ -29,17 +29,7 @@
        __typeof__ (b) _b = (b); \
      _a < _b ? _a : _b; })
 
-/*---- EXCEPTION HANDLING ----*/
-
-#define $disposeObj(obj, failed) Object.destroy(obj)
-#define $withObj(type, obj) type obj = NULL; with(obj, $disposeObj)
-
-#define $disposeObjF(obj, failed) if (failed) Object.destroy(obj)
-#define $withObjF(obj) with(obj, $disposeObjF)
-
 /*---- NAMESPACES AND TYPES ----*/
-
-#define $ns(name) $paste3(__, $namespace, _##name)
 
 #define $declareType(name) \
     typedef struct name name##_s; \

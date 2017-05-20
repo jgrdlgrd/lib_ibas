@@ -12,16 +12,9 @@
 #include <ctype.h>
 #include <limits.h>
 
-#include "e4c/e4c.h"
-
 #include "base/macros.h"
 #include "base/types.h"
-
-E4C_DECLARE_EXCEPTION(NotImplementedException);
-E4C_DECLARE_EXCEPTION(UnsupportedOperationException);
-E4C_DECLARE_EXCEPTION(EOFException);
-E4C_DECLARE_EXCEPTION(FormatException);
-E4C_DECLARE_EXCEPTION(EmptyTokenException);
+#include "base/exceptions/exception.h"
 
 #define $ObjectMethods(name) \
     void (*destroy)(name##_t self); \

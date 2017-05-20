@@ -4,6 +4,8 @@
 
 #pragma once
 
+//TODO add slice, clone, removeRange...
+
 #include "../fwd.h"
 
 #define $ListMethods(className, elemType) \
@@ -23,22 +25,22 @@
     size_t (*size)(className##_t self); \
     int (*indexOf)(className##_t self, elemType obj); \
      \
-    Object_t (*iter)(className##_t self, int i); \
-    Object_t (*begin)(className##_t self); \
-    Object_t (*end)(className##_t self); \
-    Object_t (*find)(className##_t self, elemType val); \
+    Pointer_t (*iter)(className##_t self, int i); \
+    Pointer_t (*begin)(className##_t self); \
+    Pointer_t (*end)(className##_t self); \
+    Pointer_t (*find)(className##_t self, elemType val); \
      \
-    Object_t (*iterNext)(className##_t self, Object_t iter); \
-    Object_t (*iterPrev)(className##_t self, Object_t iter); \
-    Object_t (*iterJump)(className##_t self, Object_t iter, int length); \
+    Pointer_t (*iterNext)(className##_t self, Pointer_t iter); \
+    Pointer_t (*iterPrev)(className##_t self, Pointer_t iter); \
+    Pointer_t (*iterJump)(className##_t self, Pointer_t iter, int length); \
      \
-    elemType (*iterGet)(className##_t self, Object_t iter); \
-    void (*iterSet)(className##_t self, Object_t iter, elemType val); \
+    elemType (*iterGet)(className##_t self, Pointer_t iter); \
+    void (*iterSet)(className##_t self, Pointer_t iter, elemType val); \
      \
-    void (*iterInsert)(className##_t self, Object_t iter, elemType val); \
-    void (*iterInsertAll)(className##_t self, Object_t iter, className##_t obj); \
+    void (*iterInsert)(className##_t self, Pointer_t iter, elemType val); \
+    void (*iterInsertAll)(className##_t self, Pointer_t iter, className##_t obj); \
      \
-    void (*iterRemove)(className##_t self, Object_t iter)
+    void (*iterRemove)(className##_t self, Pointer_t iter)
 
 $declareInterface(List) {
   $ListMethods(Object, Pointer_t);

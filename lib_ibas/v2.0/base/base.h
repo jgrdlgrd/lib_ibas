@@ -13,10 +13,8 @@ $defineType(Class) {
   $ObjectMethods(Object);
 };
 
-//TODO optimize capabilities provided here
-//TODO rethink method names
 $declareNamespace(Ibas) {
-  void (*init)();
+  void (*start)();
   void (*finish)();
 
   Pointer_t (*alloc)(size_t size, CString_t message);

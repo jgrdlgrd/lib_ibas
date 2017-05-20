@@ -38,6 +38,8 @@ typedef struct {
   Object_t first, second, third;
 } Triple;
 
+/*---- EXCEPTION ----*/
+
 /*---- COLLECTIONS ----*/
 
 $declareType(Vector);

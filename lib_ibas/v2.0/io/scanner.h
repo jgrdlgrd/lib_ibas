@@ -12,7 +12,7 @@ $defineType(Scanner) {
   Class_t class;
   CString_t delimiters;
   String_t str;
-  Object_t iter;
+  Pointer_t iter;
   FILE *stream;
   char last;
   bool multiline;
@@ -22,7 +22,7 @@ $declareNamespace(Scanner) {
   Class_t class;
   
   Scanner_t (*fromStream)(FILE *stream);
-  Scanner_t (*fromString)(String_t str, Object_t iter);
+  Scanner_t (*fromString)(String_t str, Pointer_t iter);
 
   $ObjectMethods(Scanner);
 

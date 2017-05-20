@@ -2,30 +2,18 @@
 // Created by Павел on 19.03.2017.
 //
 
-/*
-0 0
-1 1
--1 -1
-5,45 99
-0 0
-1 0
-0 1
-5,45 99
- */
-
 #include "lib_ibas/v2.0/lib_ibas.h"
 #include "lib_ibas/v2.0/collections/linked-list.h"
 
-void doTask(int count);
-LinkedList_t inputList();
-LinkedList_t filterList(LinkedList_t list);
+static void doTask(int count);
+static LinkedList_t inputList();
+static LinkedList_t filterList(LinkedList_t list);
 
 int main() {
-  Ibas.init();
-  int exitCode = 0;
+  Ibas.start();
 
   //@formatter:off
-  try {
+  $try {
     Console.setRusLocale();
     Console.autoDestroyStrings = true;
 
@@ -34,18 +22,15 @@ int main() {
                "Автор: Павел Андреев.\n\n");
 
     Console.repeat(doTask, "Вы желаете ввести и обработать другой список точек? (Y/N): ");
+  } $finally {
     Console.newLine();
-  } catch(RuntimeException) {
-    exitCode = 1;
-    e4c_print_exception(e4c_get_exception());
-  } finally {
     Console.colored(Colors.GREEN, "Goodbye :)");
     Console.pause();
   }
   //@formatter:on
 
   Ibas.finish();
-  return exitCode;
+  return 0;
 }
 
 void doTask(int count) {
@@ -80,14 +65,14 @@ LinkedList_t inputList() {
     bool emptyLine = true, error = false;
 
     //@formatter:off
-    try {
+    $try {
       Console.format("Точка № %d: ", count);
       dp.first = Scanner.nextDouble(scan);
       emptyLine = false;
       dp.second = Scanner.nextDouble(scan);
-    } catch(EmptyTokenException) {
+    } $catch(EmptyTokenException) {
       error = true;
-    } catch(FormatException) {
+    } $catch(FormatException) {
       error = true;
       emptyLine = false;
     }
@@ -139,3 +124,15 @@ LinkedList_t filterList(LinkedList_t list) {
 
   return result;
 }
+
+/*
+0 0
+1 1
+-1 -1
+ sef efesf
+5,45 99
+0 0
+1 0
+0 1
+5,45 99
+ */

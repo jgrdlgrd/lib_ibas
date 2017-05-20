@@ -5,21 +5,21 @@
 #include "list.h"
 #include "../base/base.h"
 
-String_t __List_toString(Object_t list, List_i class, ToString_t stringifier) {
+static String_t toString(Object_t list, List_i class, ToString_t stringifier) {
   String_t str = NULL;
 
   //@formatter:off
-  $withObjF(str) {
+  $with(str) {
     str = CString_w->toString("[");
-  } use {
+  } $use {
     Object_t it = class->begin(list);
     if (it != class->end(list)) {
       while (true) {
         Object_t elem = class->iterGet(list, it);
 
-        $withObj(String_t, str1) {
+        $withAuto(String_t, str1) {
           str1 = stringifier(elem);
-        } use{
+        } $use{
           String.addAll(str, str1);
         };
 
@@ -39,5 +39,5 @@ String_t __List_toString(Object_t list, List_i class, ToString_t stringifier) {
 }
 
 $defineNamespace(List) {
-    __List_toString
+    toString
 };
