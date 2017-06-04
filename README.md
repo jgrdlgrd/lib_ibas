@@ -14,3 +14,6 @@ Don't ask me. It's kind of Russian state secret.
 
 ## Tech details
 * Tested with GCC 5.4.0 on Cygwin
+
+## Credits
+* This project includes the exceptions4c library (https://github.com/guillermocalvo/exceptions4c) licensed under the [LGPL](http://www.gnu.org/licenses/lgpl.html)
