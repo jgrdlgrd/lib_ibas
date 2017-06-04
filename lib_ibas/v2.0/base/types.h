@@ -16,10 +16,6 @@ typedef String_s* String_t;
 
 $declareType(Class);
 
-typedef void (*Destroy_t)(Pointer_t);
-typedef String_t (*ToString_t)(Pointer_t);
-typedef int (*Compare_t)(Pointer_t, Pointer_t);
-
 /*---- PRIMITIVES ----*/
 
 typedef struct {
@@ -38,7 +34,10 @@ typedef struct {
   Object_t first, second, third;
 } Triple;
 
-/*---- EXCEPTION ----*/
+/*---- FUNCTIONS ----*/
+
+typedef void (*Callable)();
+typedef int (*Validator)(Object_t, Object_t);
 
 /*---- COLLECTIONS ----*/
 
@@ -48,4 +47,16 @@ $declareType(LinkedList);
 /*---- INPUT/OUTPUT ----*/
 
 $declareType(Scanner);
-typedef int (*Validator)(Object_t, Object_t);
+$declareType(Writer);
+
+/*---- UTILITY ----*/
+
+$declareType(Time);
+
+/*---- OBJECT METHODS ----*/
+
+typedef void (*Destroy_t)(Pointer_t);
+typedef String_t (*ToString_t)(Pointer_t);
+typedef int (*Compare_t)(Pointer_t, Pointer_t);
+typedef void (*Serialize_t)(Pointer_t, Writer_t);
+typedef Pointer_t (*Deserialize_t)(Pointer_t, Scanner_t);

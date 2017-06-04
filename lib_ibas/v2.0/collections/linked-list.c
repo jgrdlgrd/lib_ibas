@@ -3,12 +3,9 @@
 //
 
 #include "linked-list.h"
-#include "../base/base.h"
-#include "../io/console.h"
+#include "../lib_ibas.h"
 
 #define PTR_SIZE sizeof(Pointer_t)
-
-static Compare_t sortComparator;
 
 static LinkedList_t create() {
   LinkedList_t list = LinkedList.createPrimitive(PTR_SIZE, Object.class);
@@ -49,6 +46,36 @@ static String_t toString(LinkedList_t self) {
 static int compare(LinkedList_t list1, LinkedList_t list2) {
   $throw(NotImplementedException, "LinkedList.compare() is not implemented!");
   return 0;
+}
+
+static void serialize(LinkedList_t self, Writer_t writer) {
+  Pointer_t it = LinkedList.begin(self), end = LinkedList.end(self);
+
+  Writer.CPrint(writer, "[");
+  while (true) {
+    self->elemClass->serialize(LinkedList.iterGet(self, it), writer);
+    it = LinkedList.iterNext(self, it);
+
+    if (it == end) break;
+    Writer.CPrint(writer, ",\n");
+  }
+  Writer.CPrint(writer, "]");
+}
+
+static LinkedList_t deserialize(LinkedList_t self, Scanner_t scanner) {
+  if (!self) $throw(UnsupportedOperationException, NULL);
+
+  //printf(Scanner.nextLine(scanner)->storage);
+  Scanner.match(scanner, "[");
+  if (Scanner.matches(scanner, "]")) return self;
+
+  do {
+    Pointer_t elem = self->elemClass->deserialize(NULL, scanner);
+    LinkedList.add(self, elem);
+  } while (Scanner.matches(scanner, ","));
+  Scanner.match(scanner, "]");
+
+  return self;
 }
 
 static List_i toList(LinkedList_t self) {
@@ -165,7 +192,7 @@ static Pointer_t iterJump(LinkedList_t self, Pointer_t iter, int length) {
     it++;
   }
 
-  while (it != &self->head && it != &self->tail && length > 0) {
+  while (length > 0 && it != &self->head) {
     it = *it;
     length--;
   }
@@ -175,7 +202,8 @@ static Pointer_t iterJump(LinkedList_t self, Pointer_t iter, int length) {
 }
 
 static Pointer_t iterGet(LinkedList_t self, Pointer_t iter) {
-  return iter + 2 * PTR_SIZE;
+  Pointer_t *ret = iter + 2 * PTR_SIZE;
+  return self->primitive ? ret : *ret;
 }
 
 static void iterSet(LinkedList_t self, Pointer_t iter, Pointer_t val) {
@@ -217,7 +245,9 @@ static void iterRemove(LinkedList_t self, Pointer_t iter) {
   self->size--;
 }
 
-static int sortCompare(Pointer_t *ptr1, Pointer_t *ptr2) {
+static Compare_t sortComparator;
+
+static int objCompare(Pointer_t *ptr1, Pointer_t *ptr2) {
   return sortComparator(*ptr1, *ptr2);
 }
 
@@ -225,26 +255,33 @@ static void sort(LinkedList_t self, Compare_t comparator) {
   if (!comparator && !self->elemClass)
     $throw(UnsupportedOperationException, "LinkedList: no comparator defined!");
 
+  if (!comparator) comparator = self->elemClass->compare;
+
   Compare_t tmpComp = sortComparator;
-  sortComparator = comparator ? comparator : self->elemClass->compare;
+  if (!self->primitive) {
+    sortComparator = comparator;
+    comparator = (Compare_t) objCompare;
+  }
 
   //@formatter:off
   $withAuto(Vector_t, vec) {
     vec = Vector.create(self->size);
   } $use {
-    Pointer_t iter = LinkedList.begin(self);
-    while (iter != LinkedList.end(self)) {
-      Vector.add(vec, LinkedList.iterGet(self, iter));
-      iter = LinkedList.iterNext(self, iter);
+    Pointer_t *it = self->head;
+
+    while (it != &self->head) {
+      Vector.add(vec, it + 2);
+      it = *it;
     }
 
-    Vector.sort(vec, (Compare_t) sortCompare);
+    Vector.sort(vec, comparator);
 
-    iter = Vector.begin(vec);
+    Pointer_t iter = Vector.begin(vec);
     Pointer_t *prev = &self->head, *cur;
 
     while (iter != Vector.end(vec)) {
-      cur = *(Pointer_t *) Vector.iterGet(vec, iter) - 2 * PTR_SIZE;
+      cur = Vector.iterGet(vec, iter);
+      cur -= 2;
 
       *prev = cur;
       *(cur + 1) = prev + 1;
@@ -312,6 +349,8 @@ $defineNamespace(LinkedList) {
     destroy,
     toString,
     compare,
+    serialize,
+    deserialize,
     toList,
     get,
     set,

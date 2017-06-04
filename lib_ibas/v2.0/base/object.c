@@ -17,6 +17,14 @@ static int compare(Object_t obj1, Object_t obj2) {
   return Object.getClass(obj1)->compare(obj1, obj2);
 }
 
+static void serialize(Object_t obj, Writer_t writer) {
+  Object.getClass(obj)->serialize(obj, writer);
+}
+
+static Object_t deserialize(Object_t obj, Scanner_t scanner) {
+  return Object.getClass(obj)->deserialize(obj, scanner);
+}
+
 static Class_t getClass(Object_t obj) {
   return *(Class_t *) obj;
 }
@@ -26,5 +34,7 @@ $defineNamespace(Object) {
     destroy,
     toString,
     compare,
+    serialize,
+    deserialize,
     getClass
 };

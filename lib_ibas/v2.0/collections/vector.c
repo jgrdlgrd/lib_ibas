@@ -47,6 +47,14 @@ int __Vector_compare(Vector_t vec1, Vector_t vec2) {
   return 0;
 }
 
+static void serialize(Vector_t self, Writer_t writer) {
+  //TODO
+}
+
+static Vector_t deserialize(Vector_t self, Scanner_t scanner) {
+  //TODO
+}
+
 List_i __Vector_toList(Vector_t self) {
   return (List_i) &Vector.toList;
 }
@@ -162,7 +170,7 @@ Object_t __Vector_iterJump(Vector_t self, Object_t iter, int length) {
 }
 
 Pointer_t __Vector_iterGet(Vector_t self, Object_t iter) {
-  return iter;
+  return self->primitive ? iter : *(Pointer_t *) iter;
 }
 
 void __Vector_iterSet(Vector_t self, Object_t iter, Pointer_t val) {
@@ -191,13 +199,32 @@ void __Vector_ensureCapacity(Vector_t self, size_t capacity) {
   self->capacity = capacity;
 }
 
+static Compare_t sortComparator;
+
+static int objCompare(Pointer_t *ptr1, Pointer_t *ptr2) {
+  return sortComparator(*ptr1, *ptr2);
+}
+
+//TODO test
 void __Vector_sort(Vector_t self, Compare_t comparator) {
   if (!comparator && !self->elemClass)
     $throw(UnsupportedOperationException, "Vector: no comparator defined!");
 
   if (!comparator) comparator = self->elemClass->compare;
 
-  qsort(self->storage, self->size, self->elemSize, (__compar_fn_t) comparator);
+  Compare_t tmpComp = sortComparator;
+  if (!self->primitive) {
+    sortComparator = comparator;
+    comparator = (Compare_t) objCompare;
+  }
+
+  //@formatter:off
+  $try {
+    qsort(self->storage, self->size, self->elemSize, (int (*)(const void *, const void *)) comparator);
+  } $finally {
+    sortComparator = tmpComp;
+  };
+  //@formatter:off
 }
 
 $defineNamespace(Vector) {
@@ -207,6 +234,8 @@ $defineNamespace(Vector) {
     __Vector_destroy,
     __Vector_toString,
     __Vector_compare,
+    serialize,
+    deserialize,
     __Vector_toList,
     __Vector_get,
     __Vector_set,

@@ -15,77 +15,82 @@ $defineNamespace(Colors) {
 };
 
 static void clearScreen() {
-#ifdef __CYGWIN__
+#ifdef __unix__
   system("clear");
 #else
   system("cls");
 #endif
 }
 
-static void flush() {
-  int c;
-  while ((c = getchar()) != '\n' && c != EOF);
-}
-
-static void pause() {
-#ifdef __CYGWIN__
-  getchar();
+static void pause(CString_t message) {
+#ifdef __unix__
+  if (!message) message = "Для продолжения нажмите любую клавишу...";
+  Console.CPrint(message);
+  fflush(stdout);
+  system("read");
+  //Scanner.skipLine(Console.scanner);
 #else
   system("pause");
 #endif
 }
 
 static CString_t setRusLocale() {
-#ifdef __CYGWIN__
+#ifdef __unix__
   return setlocale(LC_ALL, "ru_RU.utf8");
 #else
   return setlocale(LC_ALL, "Russian");
 #endif
 }
 
-static void repeat(void (*fn)(int count), CString_t question) {
+static void repeat(void (*fn)(int count), CString_t question, bool defaultAnswer) {
   int count = 0;
   do {
     fn(count++);
-  } while (Console.prompt(question));
+  } while (Console.confirm(question, defaultAnswer));
 }
 
-static int showMenu(int count, CString_t labels[count]) {
-  static CString_t prompt = "Выберите действие: ";
+static int showMenu(CString_t prompt, int count, CString_t labels[count], Callable actions[count]) {
+  static CString_t prompt_ = "Выберите действие: ";
   static CString_t errorMessage = "Недопустимое действие!\n";
 
-  printf(prompt);
-  Console.newLine();
-
+  if (!prompt) prompt = prompt_;
+  Console.CPrintln(prompt);
   for (int i = 0; i < count; i++) {
-    printf("  %d - %s\n", i + 1, labels[i]);
+    Console.format("  %d - %s\n", i + 1, labels[i]);
   }
   Console.newLine();
 
   int option = Console.inputIntFromInterval(prompt, errorMessage, 1, count);
+  if (actions && actions[option - 1]) actions[option - 1]();
   return option;
 }
 
-static bool prompt(CString_t question) {
-  printf(question);
-  bool ans = false;
+//TODO make it encoding-independent
+static bool confirm(CString_t question, bool defaultAnswer) {
+  Console.CPrint(question);
+  bool ans = defaultAnswer;
 
-  //@formatter:off
-  $withAuto(String_t, str) {
-    str = Scanner.nextToken(Console.scanner);
-  } $use {
-    if (str->size) {
-      char ch = String.get(str, 0);
-      if (ch == 'Y' || ch == 'y') ans = true;
-      else if (ch == -48 && str->size > 1) {
-        ch = String.get(str, 1);
-        ans = ch == -67 || ch == -99;
-      }
-    }
-  };
-  //@formatter:off
+  Scanner.skipSpace(Console.scanner);
+  char ch = Scanner.nextChar(Console.scanner);
+  if (ch == 'Y' || ch == 'y')
+    ans = true;
+  else if (ch == 'N' || ch == 'n')
+    ans = false;
+  else if (ch == (char) 208) {
+    ch = Scanner.nextChar(Console.scanner);
+    if (ch == (char) 189 || ch == (char) 157)
+      ans = true;
+    else if (ch == (char) 130 || ch == (char) 162)
+      ans = false;
+  }
+  if (ch != '\n') Scanner.skipLine(Console.scanner);
 
   return ans;
+}
+
+static String_t prompt(CString_t question) {
+  Console.CPrint(question);
+  return Scanner.nextLine(Console.scanner);
 }
 
 static void inputToken(CString_t format, Pointer_t dest, CString_t prompt, CString_t errorMessage) {
@@ -93,24 +98,28 @@ static void inputToken(CString_t format, Pointer_t dest, CString_t prompt, CStri
 
   while (true) {
     if (prompt) {
-      printf(prompt);
+      Console.CPrint(prompt);
     }
 
     //@formatter:off
     $try {
       Scanner.nextFormat(Console.scanner, format, dest);
-      good = true;
+      good = !Scanner.endLine(Console.scanner);
     } $catch (FormatException) {
-      if (errorMessage) printf(errorMessage);
-      else $throw(FormatException, "Console: invalid token and no errorMessage!");
     }
     //@formatter:on
 
     if (good) break;
+
+    if (errorMessage) Console.CPrint(errorMessage);
+    else
+      $throw(FormatException, "Console: invalid token and no errorMessage!");
   }
 }
 
-static void inputAndValidateToken(CString_t format, Pointer_t dest, CString_t prompt, CString_t errorMessage, Validator validator, Object_t context) {
+static void
+inputAndValidateToken(CString_t format, Pointer_t dest, CString_t prompt, CString_t errorMessage, Validator validator,
+                      Object_t context) {
   while (true) {
     Console.inputToken(format, dest, prompt, errorMessage);
     //prompt = NULL;
@@ -138,7 +147,7 @@ static double inputDouble(CString_t prompt, CString_t errorMessage) {
 }
 
 static int intRangeValidator(Triple *ctx, int *val) {
-  int min = *((int*) ctx->first), max = *((int*) ctx->second);
+  int min = *((int *) ctx->first), max = *((int *) ctx->second);
 
   if (*val >= min && *val <= max) {
     return 0;
@@ -156,7 +165,7 @@ static int inputIntFromInterval(CString_t prompt, CString_t errorMessage, int mi
 }
 
 static int doubleRangeValidator(Triple *ctx, double *val) {
-  double min = *((double*) ctx->first), max = *((double*) ctx->second);
+  double min = *((double *) ctx->first), max = *((double *) ctx->second);
 
   if (*val >= min && *val <= max) {
     return 0;
@@ -193,17 +202,13 @@ static void CPrint(CString_t str) {
 }
 
 static void CPrintln(CString_t str) {
-  Console.CPrint(str);
-  Console.newLine();
+  puts(str);
 }
 
 static void printObj(Object_t obj) {
-  bool tmp = Console.autoDestroyStrings;
-  Console.autoDestroyStrings = true;
-
-  Console.print(Object.toString(obj));
-
-  Console.autoDestroyStrings = tmp;
+  String_t str = Object.toString(obj);
+  Console.print(str);
+  if (!Console.autoDestroyStrings) String.destroy(str);
 
   if (Console.autoDestroyObjects) Object.destroy(obj);
 }
@@ -229,11 +234,11 @@ $defineNamespace(Console) {
     false,
     false,
     clearScreen,
-    flush,
     pause,
     setRusLocale,
     repeat,
     showMenu,
+    confirm,
     prompt,
     inputToken,
     inputAndValidateToken,

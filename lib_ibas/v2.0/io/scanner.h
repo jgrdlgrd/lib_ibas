@@ -6,8 +6,6 @@
 
 #include "../fwd.h"
 
-//TODO rewrite a few methods
-
 $defineType(Scanner) {
   Class_t class;
   CString_t delimiters;
@@ -15,7 +13,7 @@ $defineType(Scanner) {
   Pointer_t iter;
   FILE *stream;
   char last;
-  bool multiline;
+  bool multiline, destroySource;
 };
 
 $declareNamespace(Scanner) {
@@ -37,5 +35,10 @@ $declareNamespace(Scanner) {
   String_t (*nextText)(Scanner_t self);
 
   unsigned (*skip)(Scanner_t self);
+  unsigned (*skipSpace)(Scanner_t self);
   unsigned (*skipLine)(Scanner_t self);
+  bool (*endLine)(Scanner_t self); //TODO rename/remake
+
+  void (*match)(Scanner_t self, CString_t format); //TODO make varags
+  bool (*matches)(Scanner_t self, CString_t format);
 };

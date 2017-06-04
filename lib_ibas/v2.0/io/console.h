@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "../fwd.h"
+//TODO consider using validators
 
-//TODO rewrite a few methods
+#include "../fwd.h"
 
 //TODO add more colors
 $declareNamespace(Colors) {
@@ -21,13 +21,13 @@ $declareNamespace(Console) {
   bool autoDestroyObjects;
 
   void (*clearScreen)();
-  void (*flush)();
-  void (*pause)();
+  void (*pause)(CString_t message);
   CString_t (*setRusLocale)();
 
-  void (*repeat)(void (*fn)(int count), CString_t question);
-  int (*showMenu)(int count, CString_t labels[count]);
-  bool (*prompt)(CString_t question);
+  void (*repeat)(void (*fn)(int count), CString_t question, bool defaultAnswer);
+  int (*showMenu)(CString_t prompt, int count, CString_t labels[count], Callable actions[count]);
+  bool (*confirm)(CString_t question, bool defaultAnswer);
+  String_t (*prompt)(CString_t question);
 
   void (*inputToken)(CString_t format, Pointer_t dest, CString_t prompt, CString_t errorMessage);
   void (*inputAndValidateToken)(CString_t format, Pointer_t dest, CString_t prompt, CString_t errorMessage, Validator validator, Object_t context);

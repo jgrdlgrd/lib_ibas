@@ -4,60 +4,113 @@
 
 #include "wrappers.h"
 #include "base.h"
+#include "../io/writer.h"
+#include "../io/scanner.h"
 
 //TODO implement
 
-static void __Int_destroy(int *ptr) {}
+static void noop_destroy(Pointer_t ptr) {}
 
-static String_t __Int_toString(int *ptr) {
+static String_t noop_toString(Pointer_t ptr) {
+  $throw(NotImplementedException, "");
+  return NULL;
+}
+
+static int noop_compare(Pointer_t ptr1, Pointer_t ptr2) {
+  $throw(NotImplementedException, "");
+  return 0;
+}
+
+// ------
+
+static String_t Int_toString(int *ptr) {
   return String.format("%d", *ptr);
 }
 
-static int __Int_compare(int *ptr1, int *ptr2) {
+static int Int_compare(int *ptr1, int *ptr2) {
   if (*ptr1 == *ptr2) return 0;
   return *ptr1 < *ptr2 ? -1 : 1;
 }
 
-$defineWrapper(Int);
+static void Int_serialize(int *ptr, Writer_t writer) {
+  Writer.format(writer, "%d", *ptr);
+}
 
-static void __Double_destroy(double *ptr) {}
+static int *Int_deserialize(int *ptr, Scanner_t scanner) {
+  if (!ptr) $throw(UnsupportedOperationException, "");
 
-static String_t __Double_toString(double *ptr) {
+  CString_t tmp = scanner->delimiters;
+  scanner->delimiters = " ,}\n\t";
+
+  Scanner.nextFormat(scanner, "%d", ptr);
+  scanner->delimiters = tmp;
+  return ptr;
+}
+
+$defineWrapper(Int) {
+    (Destroy_t) noop_destroy,
+    (ToString_t) Int_toString,
+    (Compare_t) Int_compare,
+    (Serialize_t) Int_serialize,
+    (Deserialize_t) Int_deserialize
+};
+
+static String_t Double_toString(double *ptr) {
   return String.format("%lf", *ptr);
 }
 
-static int __Double_compare(double *ptr1, double *ptr2) {
+static int Double_compare(double *ptr1, double *ptr2) {
   if (*ptr1 == *ptr2) return 0;
   return *ptr1 < *ptr2 ? -1 : 1;
 }
 
-$defineWrapper(Double);
-
-static void __CString_destroy(CString_t str) {}
+$defineWrapper(Double) {
+    (Destroy_t) noop_destroy,
+    (ToString_t) Double_toString,
+    (Compare_t) Double_compare
+};
 
 void __Vector_insertSlice(Vector_t self, int i, Pointer_t slice, size_t size);
 
-static String_t __CString_toString(CString_t cstr) {
+static String_t CString_toString(CString_t cstr) {
   String_t str = String.create(0);
   __Vector_insertSlice(str, 0, cstr, strlen(cstr));
   return str;
 }
 
-static int __CString_compare(CString_t str1, CString_t str2) {
+static int CString_compare(CString_t str1, CString_t str2) {
   return strcmp(str1, str2);
 }
 
-$defineWrapper(CString);
+$defineWrapper(CString) {
+    (Destroy_t) noop_destroy,
+    (ToString_t) CString_toString,
+    (Compare_t) CString_compare
+};
 
-static void __Pair_destroy(Pair *ptr) {}
-
-static String_t __Pair_toString(Pair *ptr) {
+static void File_destroy(FILE **ptr) {
+  fclose(*ptr);
 }
 
-static int __Pair_compare(Pair *ptr1, Pair *ptr2) {
+$defineWrapper(File) {
+    (Destroy_t) File_destroy,
+    (ToString_t) noop_toString,
+    (Compare_t) noop_compare
+};
+
+static void Pair_destroy(Pair *ptr) {}
+
+static String_t Pair_toString(Pair *ptr) {
 }
 
-$defineWrapper(Pair);
+static int Pair_compare(Pair *ptr1, Pair *ptr2) {
+}
+
+$defineWrapper(Pair) {
+    (Destroy_t) Pair_destroy,
+    (ToString_t) Double_toString,
+    (Compare_t) Double_compare
+};
 
 static void __IntPair_destroy(IntPair *ptr) {}
 
@@ -66,12 +119,16 @@ static String_t __IntPair_toString(IntPair *ptr) {
 }
 
 static int __IntPair_compare(IntPair *ptr1, IntPair *ptr2) {
-  int ret = Int_w->compare(&ptr1->first, &ptr2->first);
+  int ret = Int_w.compare(&ptr1->first, &ptr2->first);
   if (ret) return ret;
-  return Int_w->compare(&ptr1->second, &ptr2->second);
+  return Int_w.compare(&ptr1->second, &ptr2->second);
 }
 
-$defineWrapper(IntPair);
+$defineWrapper(IntPair) {
+    (Destroy_t) Pair_destroy,
+    (ToString_t) Double_toString,
+    (Compare_t) Double_compare
+};
 
 static void __DoublePair_destroy(DoublePair *ptr) {}
 
@@ -80,12 +137,16 @@ static String_t __DoublePair_toString(DoublePair *ptr) {
 }
 
 static int __DoublePair_compare(DoublePair *ptr1, DoublePair *ptr2) {
-  int ret = Double_w->compare(&ptr1->first, &ptr2->first);
+  int ret = Double_w.compare(&ptr1->first, &ptr2->first);
   if (ret) return ret;
-  return Double_w->compare(&ptr1->second, &ptr2->second);
+  return Double_w.compare(&ptr1->second, &ptr2->second);
 }
 
-$defineWrapper(DoublePair);
+$defineWrapper(DoublePair) {
+    (Destroy_t) Pair_destroy,
+    (ToString_t) Double_toString,
+    (Compare_t) Double_compare
+};
 
 static void __Triple_destroy(Triple *ptr) {}
 
@@ -95,4 +156,8 @@ static String_t __Triple_toString(Triple *ptr) {
 static int __Triple_compare(Triple *ptr1, Triple *ptr2) {
 }
 
-$defineWrapper(Triple);
+$defineWrapper(Triple) {
+    (Destroy_t) Pair_destroy,
+    (ToString_t) Double_toString,
+    (Compare_t) Double_compare
+};

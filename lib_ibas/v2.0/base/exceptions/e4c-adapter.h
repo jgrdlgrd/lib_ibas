@@ -4,7 +4,10 @@
 
 #pragma once
 
-#include "lib_ibas/v2.0/fwd.h"
+//TODO adapt 'catch then dispose' strategy
+//TODO handle subprocess signals
+
+#include "../../fwd.h"
 
 #ifdef USE_E4C
 
@@ -22,6 +25,8 @@
 
 #define $throw E4C_THROW
 
+#define $rethrow(message_) E4C_RETHROW((message_) ? (message_) : e4c_get_exception()->message)
+
 #define $_dispose(obj, failed) if (failed) Object.destroy(obj)
 #define $with(resource) E4C_WITH(resource, $_dispose)
 
@@ -37,6 +42,6 @@
 
 #define $defineException E4C_DEFINE_EXCEPTION
 
-#include "exc-def.h"
+#include "exc-decl.h"
 
 #endif

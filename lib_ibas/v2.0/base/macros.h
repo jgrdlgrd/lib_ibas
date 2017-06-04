@@ -47,12 +47,6 @@
 
 #define $defineNamespace(name) struct name##_c name =
 
-#define $declareWrapper(name) extern Class_t name##_w
+#define $declareWrapper(name) extern Class_s name##_w
 
-#define $defineWrapper(name) \
-    Class_s name##_c = (Class_s) { \
-      (Destroy_t) __##name##_destroy, \
-      (ToString_t) __##name##_toString, \
-      (Compare_t) __##name##_compare \
-    }; \
-    Class_t name##_w = &name##_c
+#define $defineWrapper(name) Class_s name##_w =

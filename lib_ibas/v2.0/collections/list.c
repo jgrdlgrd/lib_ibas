@@ -10,7 +10,7 @@ static String_t toString(Object_t list, List_i class, ToString_t stringifier) {
 
   //@formatter:off
   $with(str) {
-    str = CString_w->toString("[");
+    str = CString_w.toString("[");
   } $use {
     Object_t it = class->begin(list);
     if (it != class->end(list)) {

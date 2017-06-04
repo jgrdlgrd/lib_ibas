@@ -18,4 +18,5 @@ $declareNamespace(Ibas) {
   void (*finish)();
 
   Pointer_t (*alloc)(size_t size, CString_t message);
+  Pointer_t (*allocEmpty)(size_t size, CString_t message);
 };

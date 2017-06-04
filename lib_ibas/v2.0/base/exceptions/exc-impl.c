@@ -7,13 +7,13 @@
 #ifndef USE_E4C
 
 #include <errno.h>
-#include "lib_ibas/v2.0/io/console.h"
+#include "../../io/console.h"
 
 $declareType(ExceptionFrame);
 $defineType(ExceptionFrame) {
   ExceptionFrame_t previous;
   ExceptionStage_t stage;
-  bool uncaught;
+  bool uncaught, acquired;
   Exception_t thrownException;
   jmp_buf continuation;
 };
@@ -26,7 +26,7 @@ static jmp_buf *createFrame(ExceptionStage_t stage) {
 
   frame->previous = curFrame;
   frame->stage = stage;
-  frame->uncaught = false;
+  frame->uncaught = frame->acquired = false;
   frame->thrownException = NULL;
 
   curFrame = frame;
@@ -93,7 +93,7 @@ static void printExc(Exception_t exception) {
 static void processUncaught(Exception_t exception) {
   //TODO implement custom
   printExc(exception);
-  Console.pause();
+  Console.pause(NULL);
 }
 
 static bool isInstanceOf(Exception_t instance, ExceptionType_t type) {
@@ -126,19 +126,15 @@ static bool tryToCatch(ExceptionType_t type) {
   return false;
 }
 
-static void propagateExc(Exception_t exception) {
-  curFrame->uncaught = true;
-  free(curFrame->thrownException);
-  curFrame->thrownException = exception;
-
+static void propagateExc() {
   if (curFrame->previous == NULL) {
-    processUncaught(exception);
+    processUncaught(curFrame->thrownException);
     Exception.finish();
     exit(-1);
   }
 
   if (curFrame->stage == exc_acquiring) {
-    curFrame->stage = exc_disposing;
+    curFrame->stage = exc_trying;
   }
 
   longjmp(curFrame->continuation, 1);
@@ -157,13 +153,28 @@ static void throwExc(ExceptionType_t type, CString_t file, int line, CString_t f
 
   snprintf(exception->message, EXCEPTION_MESSAGE_SIZE, "%s", message ? message : type->default_message);
 
-  propagateExc(exception);
+  curFrame->uncaught = true;
+  free(curFrame->thrownException);
+  curFrame->thrownException = exception;
+
+  propagateExc();
+}
+
+static void rethrow(CString_t message) {
+  if (message && curFrame->thrownException)
+    snprintf(curFrame->thrownException->message, EXCEPTION_MESSAGE_SIZE, "%s", message);
+  curFrame->uncaught = true;
+  propagateExc();
 }
 
 static bool nextStage() {
   curFrame->stage++;
 
   if (curFrame->stage == exc_catching && !curFrame->uncaught) {
+    curFrame->stage++;
+  }
+
+  if (curFrame->stage == exc_disposing && !curFrame->acquired) {
     curFrame->stage++;
   }
 
@@ -185,7 +196,10 @@ static bool nextStage() {
   curFrame = previous;
 
   if (thrown != NULL) {
-    propagateExc(thrown);
+    curFrame->uncaught = true;
+    free(curFrame->thrownException);
+    curFrame->thrownException = thrown;
+    propagateExc();
   }
 
   return false;
@@ -215,6 +229,10 @@ static ExceptionStatus_t getStatus() {
   return exc_recovered;
 }
 
+static bool setAcquired() {
+  return (curFrame->acquired = true);
+}
+
 $defineNamespace(Exception) {
     EXCEPTION_MESSAGE_SIZE,
     start,
@@ -227,7 +245,9 @@ $defineNamespace(ExceptionInternals) {
     createFrame,
     tryToCatch,
     nextStage,
-    throwExc
+    throwExc,
+    rethrow,
+    setAcquired
 };
 
 $defineException(AssertionException, "Assertion failed.", AssertionException);

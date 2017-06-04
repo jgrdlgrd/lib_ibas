@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include "lib_ibas/v2.0/fwd.h"
+//#define USE_E4C
+
+#include "../../fwd.h"
 
 #define EXCEPTION_MESSAGE_SIZE 128
 
@@ -12,8 +14,8 @@ typedef enum {
   exc_beginning,
   exc_acquiring,
   exc_trying,
-  exc_disposing,
   exc_catching,
+  exc_disposing,
   exc_finalizing,
   exc_done
 } ExceptionStage_t;

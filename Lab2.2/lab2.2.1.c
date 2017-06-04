@@ -21,11 +21,11 @@ int main() {
                "Введите список двумерных точек, и я отфильтрую все точки, встречающиеся более 1 раза.\n"
                "Автор: Павел Андреев.\n\n");
 
-    Console.repeat(doTask, "Вы желаете ввести и обработать другой список точек? (Y/N): ");
+    Console.repeat(doTask, "Вы желаете ввести и обработать другой список точек? (Y/N): ", false);
   } $finally {
     Console.newLine();
     Console.colored(Colors.GREEN, "Goodbye :)");
-    Console.pause();
+    Console.pause(NULL);
   }
   //@formatter:on
 
@@ -54,7 +54,7 @@ void doTask(int count) {
 }
 
 LinkedList_t inputList() {
-  LinkedList_t list = LinkedList.createPrimitive(sizeof(DoublePair), DoublePair_w);
+  LinkedList_t list = LinkedList.createPrimitive(sizeof(DoublePair), &DoublePair_w);
 
   Scanner_t scan = Scanner.fromStream(stdin);
   scan->multiline = false;
@@ -95,7 +95,7 @@ LinkedList_t inputList() {
 }
 
 LinkedList_t filterList(LinkedList_t list) {
-  LinkedList_t result = LinkedList.createPrimitive(sizeof(DoublePair), DoublePair_w);
+  LinkedList_t result = LinkedList.createPrimitive(sizeof(DoublePair), &DoublePair_w);
   if (list->size == 0) return result;
 
   LinkedList.sort(list, NULL);
@@ -111,7 +111,7 @@ LinkedList_t filterList(LinkedList_t list) {
     if (iter != LinkedList.end(list))
       cur = LinkedList.iterGet(list, iter);
 
-    if (cur && DoublePair_w->compare(prev, cur) == 0) {
+    if (cur && DoublePair_w.compare(prev, cur) == 0) {
       unique = false;
     } else {
       if (unique) LinkedList.add(result, prev);

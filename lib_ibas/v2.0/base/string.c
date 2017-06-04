@@ -3,6 +3,8 @@
 //
 
 #include "string.h"
+#include "../io/writer.h"
+#include "../io/scanner.h"
 
 /*---- WRAPPERS ----*/
 
@@ -19,6 +21,35 @@ static String_t toString(String_t self) {
 static int compare(String_t str1, String_t str2) {
   return strcmp(String.CStr(str1), String.CStr(str2));
 }
+
+static void serialize(String_t self, Writer_t writer) {
+  Writer.format(writer, "\"%s\"", String.CStr(self)); //TODO escape
+}
+
+static String_t deserialize(String_t self, Scanner_t scanner) {
+  if (!self) self = String.create(0);
+
+  Scanner.match(scanner, "\"");
+  char ch = 0;
+  bool eof = false;
+
+  while (true) {
+    //@formatter:off
+    $try {
+      ch = Scanner.nextChar(scanner);
+    } $catch(EOFException) {
+      eof = true;
+    }
+    //@formatter:on
+
+    if (ch == '"' || eof) break;
+    String.add(self, ch);
+  }
+
+  return self;
+}
+
+/*---- WRAPPERS ----*/
 
 static char get(String_t self, int i) {
   return *(char *) Vector.get(self, i);
@@ -63,7 +94,8 @@ static List_i toList(String_t self) {
 /*---- METHODS ----*/
 
 static CString_t CStr(String_t self) {
-  //FIXME
+  String.ensureCapacity(self, self->size + 1);
+  *((char *) self->storage + self->size) = 0;
   return self->storage;
 }
 
@@ -130,6 +162,8 @@ $defineNamespace(String) {
     __Vector_destroy,
     toString,
     compare,
+    serialize,
+    deserialize,
     toList,
     get,
     set,

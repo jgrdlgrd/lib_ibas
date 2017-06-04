@@ -21,3 +21,6 @@ $declareException(EOFException);
 $declareException(FormatException);
 
 $declareException(EmptyTokenException);
+
+$declareException(FileOpenException);
+$declareException(FileAlreadyExistsException);

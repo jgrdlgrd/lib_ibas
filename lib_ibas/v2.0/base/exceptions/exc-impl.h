@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "lib_ibas/v2.0/fwd.h"
+#include "../../fwd.h"
 
 #ifndef USE_E4C
 
@@ -32,6 +32,8 @@ $declareNamespace(ExceptionInternals) {
   bool (*tryToCatch)(ExceptionType_t exception_type);
   bool (*nextStage)();
   void (*throwException)(ExceptionType_t type, CString_t file, int line, CString_t function, CString_t message);
+  void (*rethrow)(CString_t message);
+  bool (*setAcquired)();
 };
 
 #define $assert(condition) \
@@ -40,7 +42,7 @@ $declareNamespace(ExceptionInternals) {
 #define $try \
   if (setjmp(*ExceptionInternals.createFrame(exc_acquiring)) >= 0) \
     while (ExceptionInternals.nextStage()) \
-      if (ExceptionInternals.currentStage() == exc_trying && ExceptionInternals.nextStage())
+      if (ExceptionInternals.currentStage() == exc_trying)
 
 #define $catch(exception_type) \
   else if (ExceptionInternals.tryToCatch(&exception_type))
@@ -51,12 +53,15 @@ $declareNamespace(ExceptionInternals) {
 #define $throw(exception_type, message) \
   ExceptionInternals.throwException(&exception_type, __FILE__, __LINE__, (CString_t) __func__, message)
 
+#define $rethrow(message) \
+  ExceptionInternals.rethrow(message)
+
 #define $with(resource) \
   if (setjmp(*ExceptionInternals.createFrame(exc_beginning)) >= 0) \
     while (ExceptionInternals.nextStage()) \
       if(ExceptionInternals.currentStage() == exc_disposing && Exception.getStatus() == exc_failed) { \
         Object.destroy(resource); \
-      } else if (ExceptionInternals.currentStage() == exc_acquiring) {
+      } else if (ExceptionInternals.currentStage() == exc_acquiring)
 
 #define $withAuto(type, resource) \
   for (bool flag = true; flag; ) \
@@ -65,10 +70,10 @@ $declareNamespace(ExceptionInternals) {
         while (ExceptionInternals.nextStage()) \
           if (ExceptionInternals.currentStage() == exc_disposing) { \
             Object.destroy(resource); \
-          } else if (ExceptionInternals.currentStage() == exc_acquiring) {
+          } else if (ExceptionInternals.currentStage() == exc_acquiring)
 
 #define $use \
-  } else if (ExceptionInternals.currentStage() == exc_trying)
+  else if (ExceptionInternals.currentStage() == exc_trying && ExceptionInternals.setAcquired())
 
 #define $declareException(name) extern ExceptionType_s name
 
@@ -79,6 +84,6 @@ $declareNamespace(ExceptionInternals) {
     &supertype \
   }
 
-#include "exc-def.h"
+#include "exc-decl.h"
 
 #endif

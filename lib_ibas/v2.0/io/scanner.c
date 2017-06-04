@@ -5,6 +5,8 @@
 #include "scanner.h"
 #include "../base/base.h"
 
+//TODO do not always switch params
+
 $defineException(EmptyTokenException, "Scanner: unable to produce next token!", FormatException);
 
 static Scanner_t create(FILE *stream, String_t str, Pointer_t iter) {
@@ -14,6 +16,7 @@ static Scanner_t create(FILE *stream, String_t str, Pointer_t iter) {
   self->multiline = true;
   self->delimiters = " \t\n";
   self->last = 0;
+  self->destroySource = false;
 
   self->stream = stream;
 
@@ -33,6 +36,13 @@ static Scanner_t fromString(String_t str, Pointer_t iter) {
 }
 
 static void destroy(Scanner_t self) {
+  if (!self) return;
+
+  if (self->destroySource) {
+    if (self->str) String.destroy(self->str);
+    if (self->stream) File_w.destroy(&self->stream);
+  }
+
   free(self);
 }
 
@@ -41,14 +51,25 @@ static String_t toString(Scanner_t self) {
 }
 
 static int compare(Scanner_t obj1, Scanner_t obj2) {
-  $throw(NotImplementedException, "Scanner.compare() not implemented!");
+  $throw(NotImplementedException, "Scanner.compare() is not implemented!");
   return 0;
+}
+
+static void serialize(Scanner_t self, Writer_t writer) {
+  $throw(NotImplementedException, "Scanner.serialize() is not implemented!");
+}
+
+static Scanner_t deserialize(Scanner_t self, Scanner_t scanner) {
+  $throw(NotImplementedException, "Scanner.deserialize() is not implemented!");
+  return NULL;
 }
 
 static unsigned read(Scanner_t self, String_t buffer) {
   char ch = 0;
-  bool inToken = false, eof = false;
+  bool eof = false;
   unsigned count = 0;
+
+  Scanner.skipSpace(self);
 
   while (true) {
     //@formatter:off
@@ -61,14 +82,11 @@ static unsigned read(Scanner_t self, String_t buffer) {
 
     if (eof) break;
 
-    if (strchr(self->delimiters, ch)) {
-      if (inToken || (ch == '\n' && !self->multiline)) {
-        self->last = ch;
-        break;
-      } else continue;
+    if (strchr(self->delimiters, ch) || (ch == '\n' && !self->multiline)) {
+      self->last = ch;
+      break;
     }
 
-    inToken = true;
     count++;
     if (buffer) String.add(buffer, ch);
   }
@@ -91,7 +109,7 @@ static void nextFormat(Scanner_t self, CString_t format, Pointer_t dest) {
       $throw(EmptyTokenException, NULL);
     }
 
-    String_t _format = CString_w->toString(format);
+    String_t _format = CString_w.toString(format);
     String.appendCStr(_format, "%n");
 
     int count;
@@ -109,7 +127,7 @@ static char nextChar(Scanner_t self) {
   if (self->last) {
     ch = self->last;
   } else if (self->stream && !feof(self->stream)) {
-    ch = (char) fgetc(self->stream);
+    ch = (char) fgetc(self->stream); //TODO check
   } else if (self->str && self->iter != String.end(self->str)) {
     ch = String.iterGet(self->str, self->iter);
     self->iter = String.iterNext(self->str, self->iter);
@@ -156,10 +174,77 @@ static unsigned skip(Scanner_t self) {
   return read(self, NULL);
 }
 
+static unsigned skipSpace(Scanner_t self) {
+  unsigned count = 0;
+  char ch = 0;
+  bool eof = false;
+
+  while (true) {
+    //@formatter:off
+    $try {
+      ch = Scanner.nextChar(self);
+    } $catch(EOFException) {
+      eof = true;
+    }
+    //@formatter:on
+
+    if (eof) break;
+
+    if (!strchr(self->delimiters, ch) || (ch == '\n' && !self->multiline)) {
+      self->last = ch;
+      break;
+    }
+
+    count++;
+  }
+
+  return count;
+}
+
 static unsigned skipLine(Scanner_t self) {
   unsigned count = 0;
   while (Scanner.nextChar(self) != '\n') count++;
   return count;
+}
+
+//skips the current line returns true if there was at least one token
+static bool endLine(Scanner_t self) {
+  bool ret = false;
+  bool multi = self->multiline;
+  self->multiline = false;
+
+  if (Scanner.skip(self) > 0) ret = true;
+  Scanner.skipLine(self);
+
+  self->multiline = multi;
+  return ret;
+}
+
+static void match(Scanner_t self, CString_t format) {
+  while (*format && strchr(self->delimiters, *format)) format++;
+  Scanner.skipSpace(self);
+
+  while (*format && !strchr(self->delimiters, *format)) {
+    char ch = Scanner.nextChar(self);
+    if (ch != *format) {
+      self->last = ch;
+      $throw(FormatException, NULL);
+    }
+    format++;
+  }
+}
+
+static bool matches(Scanner_t self, CString_t format) {
+  bool good = false;
+  //@formatter:off
+    $try {
+      Scanner.match(self, format);
+      good = true;
+    } $catch(EOFException) {
+    } $catch(FormatException) {
+    };
+    //@formatter:on
+  return good;
 }
 
 $defineNamespace(Scanner) {
@@ -169,6 +254,8 @@ $defineNamespace(Scanner) {
     destroy,
     toString,
     compare,
+    serialize,
+    deserialize,
     nextToken,
     nextFormat,
     nextChar,
@@ -177,5 +264,9 @@ $defineNamespace(Scanner) {
     nextLine,
     nextText,
     skip,
-    skipLine
+    skipSpace,
+    skipLine,
+    endLine,
+    match,
+    matches
 };

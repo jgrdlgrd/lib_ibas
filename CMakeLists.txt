@@ -30,3 +30,6 @@ add_executable(Lab1.4 Lab1.4/lab4.23.c ${LIB_1.5})
 
 add_executable(Lab2.1 Lab2.1/lab2.1.1.c ${LIB_1.9})
 add_executable(Lab2.2 Lab2.2/lab2.2.1.c ${LIB_2.0})
+
+FILE(GLOB_RECURSE LAB2.3 Lab2.3/*.[ch])
+add_executable(Lab2.3 ${LAB2.3} ${LIB_2.0})

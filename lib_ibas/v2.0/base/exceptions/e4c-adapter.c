@@ -7,7 +7,7 @@
 #ifdef USE_E4C
 
 static void start() {
-  e4c_context_begin(E4C_TRUE);
+  e4c_context_begin(E4C_FALSE); //or handle SIGCHLD
 }
 
 static void finish() {

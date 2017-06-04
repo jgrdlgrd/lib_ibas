@@ -9,6 +9,7 @@
 $declareWrapper(Int);
 $declareWrapper(Double);
 $declareWrapper(CString);
+$declareWrapper(File);
 
 $declareWrapper(Pair);
 $declareWrapper(IntPair);

@@ -22,8 +22,15 @@ static Pointer_t alloc(size_t size, CString_t message) {
   return ptr;
 }
 
+static Pointer_t allocEmpty(size_t size, CString_t message) {
+  Pointer_t ptr = Ibas.alloc(size, message);
+  memset(ptr, 0, size);
+  return ptr;
+}
+
 $defineNamespace(Ibas) {
     start,
     finish,
-    alloc
+    alloc,
+    allocEmpty
 };
