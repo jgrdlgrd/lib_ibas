@@ -2,9 +2,9 @@
 // Created by Павел on 17.05.2017.
 //
 
-#include "e4c-adapter.h"
-
 #ifdef USE_E4C
+
+#include "e4c-adapter.h"
 
 static void start() {
   e4c_context_begin(E4C_FALSE); //or handle SIGCHLD

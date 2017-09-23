@@ -116,7 +116,7 @@ static Time_t inputDate(CString_t prompt, CString_t errorMessage) {
     //@formatter:off
     $withAuto(String_t, str) {
       str = Scanner.nextToken(Console.scanner);
-
+    } $use {
       if (!Scanner.endLine(Console.scanner)) {
         date = Time.fromString(String.CStr(str));
       } else {

@@ -4,8 +4,6 @@
 
 #pragma once
 
-//#define USE_E4C
-
 #include "../../fwd.h"
 
 #define EXCEPTION_MESSAGE_SIZE 128

@@ -8,7 +8,7 @@
 //TODO document everything :D
 //TODO test everything :D
 
-#include "lib_ibas/v2.0/base/base.h"
+#include "base/base.h"
 #include "io/console.h"
 #include "io/scanner.h"
 #include "io/writer.h"

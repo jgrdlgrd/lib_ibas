@@ -9,8 +9,6 @@
 
 #include "../../fwd.h"
 
-#ifdef USE_E4C
-
 #define E4C_NOKEYWORDS
 #include "e4c/e4c.h"
 #undef E4C_NOKEYWORDS
@@ -43,5 +41,3 @@
 #define $defineException E4C_DEFINE_EXCEPTION
 
 #include "exc-decl.h"
-
-#endif

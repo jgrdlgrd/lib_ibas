@@ -2,11 +2,11 @@
 // Created by Павел on 17.12.2016.
 //
 
-#include <locale.h>
-
 #include "console.h"
 #include "scanner.h"
 #include "../base/base.h"
+
+#include <locale.h>
 
 $defineNamespace(Colors) {
     "\033[0m",
