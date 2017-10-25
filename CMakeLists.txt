@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
 project(Labs)
 
-list(APPEND CMAKE_CXX_FLAGS -std=c++17)
 list(APPEND CMAKE_C_FLAGS -std=c11)
 
 include_directories(lib)
@@ -48,5 +47,3 @@ target_link_libraries(Lab2.2 lib2.0)
 FILE(GLOB_RECURSE LAB2.3 Lab2.3/*.c)
 add_executable(Lab2.3 ${LAB2.3})
 target_link_libraries(Lab2.3 lib2.0)
-
-add_executable(Lab3.1 Lab3.1/lab3.1.27.cpp)
